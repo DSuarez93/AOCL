@@ -20,10 +20,11 @@ const int Mo2 = 18;
 const int Mo3 = 14;
 //Sabertooth ST(128);                       //first motor drive
 SoftwareSerial SWSerial(NOT_A_PIN, Mo1);
-//SoftwareSerial SWSerial2(NOT_A_PIN, Mo2);
+SoftwareSerial SWSerial2(NOT_A_PIN, Mo2);
 //SoftwareSerial SWSerial3(NOT_A_PIN, Mo3);
 Sabertooth ST(128, SWSerial);
-Sabertooth ST2(129);                        //check second motor drive alternative address
+Sabertooth ST2(129, SWSerial2);
+//Sabertooth ST2(129);                        //check second motor drive alternative address
                                             //Does third motor need a different address?
 //int power;
 int pow1, pow2, pow3, pow4;  //remember to rename pow# with designated motor
@@ -39,17 +40,17 @@ PS3USB PS3(&Usb); // This will just create the instance
  */
 //Digital Ultrasonic Sensors
 //t means transmit, e means echo
-const int USt1 = 22;
-const int USe1 = 23;
-const int USt2 = 24;
-const int USe2 = 25;
-const int USt3 = 26;
-const int USe3 = 27;
-const int USt4 = 28;
-const int USe4 = 29;
-const int USt5 = 30;
-const int USe5 = 31;
-const int USt6 = 32;
+const int USt1 = 22;                        //  Mo1.1         Mo2.1
+const int USe1 = 23;                        //  (-)           (+)     Forward  
+const int USt2 = 24;                        //  (+)           (-)     Backward
+const int USe2 = 25;                        //
+const int USt3 = 26;                        //
+const int USe3 = 27;                        //
+const int USt4 = 28;                        //
+const int USe4 = 29;                        //
+const int USt5 = 30;                        //  Mo1.2         Mo2.2
+const int USe5 = 31;                        //  (-)           (+)     Forward
+const int USt6 = 32;                        //  (+)           (-)     Backward
 const int USe6 = 33;
 const int USt7 = 34;
 const int USe7 = 35;
@@ -79,8 +80,17 @@ const int ir3 = 11;
 //RBG
 const int RGB = 2;
 
+/*
+ *  Behavioral States
+ */
+int standby;
+int detectF;
+int detectB:
+int detectL:
+int detectR;
+int stickUD;
+int stickLF;
 
-int state = 0;
 const int relayState = 8;
 
     void Output() {
@@ -120,7 +130,8 @@ const int relayState = 8;
   }
   
   void setup() {
-  Serial.begin(115200);
+    //baud must be 9600
+  Serial.begin(9600);
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
 
@@ -129,11 +140,15 @@ const int relayState = 8;
     */
   pinMode(Mo1, OUTPUT);
   pinMode(Mo2, OUTPUT);
-  SWSerial.begin(115200);
-  SabertoothTXPinSerial.begin(115200);
+  pinMode(Mo3, OUTPUT);
+  SWSerial.begin(9600);
+  SWSerial2.begin(9600);
+  //SWSerial3.begin(9600);
+  SabertoothTXPinSerial.begin(9600);
   //power = 0;
   pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0;
-  Sabertooth::autobaud(SabertoothTXPinSerial);
+  ST.autobaud();
+  ST2.autobaud();
   state = 0;
 
     /*
@@ -263,7 +278,7 @@ const int relayState = 8;
     if (variable > 127) {
       variable = 127;
     }
-    if (variable <-127) {
+    if (variable < -127) {
       variable = -127;
     }
   }
@@ -377,8 +392,16 @@ void loop() {
   relay();              //Update Relay
 //  ping();             //Ping Sensors
 //  controllerReport(); //Serial Print Controller to Monitor
-
-//Serial.println(power);  //If all motors share "power", they all move in the same direction and speed
+/*
+Serial.print(pow1);  //If all motors share "power", they all move in the same direction and speed
+Serial.print("  ");
+Serial.print(pow2);
+Serial.print("  ");
+Serial.print(pow3);
+Serial.print("  ");
+Serial.print(pow4);
+Serial.println();
+*/
 //Serial.println(state);
   /*
    * Send final motor values to drivers
@@ -387,6 +410,7 @@ void loop() {
   ST.motor(2, pow2);
   ST2.motor(1, pow3);
   ST2.motor(2, pow4);
+  //ST.turn(power);
   delay(50);
   if (pow1 == 0 && pow2 == 0 && pow3 == 0 && pow4 == 0) {
     digitalWrite(13, HIGH);
