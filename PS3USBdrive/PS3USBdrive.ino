@@ -202,9 +202,9 @@ const int relayState = 8;
   void leftControl()  {
   if (PS3.PS3Connected) {
     if (PS3.getButtonPress(L1))  {
-      /*
+      
         
-        Outside Neutral
+//        DeadZone
         if((PS3.getAnalogHat(LeftHatX) < lowDead) || 
            (PS3.getAnalogHat(LeftHatX) > highDead) ||
            (PS3.getAnalogHat(LeftHatY) < lowDead) ||
@@ -214,8 +214,8 @@ const int relayState = 8;
              if((PS3.getAnalogHat(LeftHatX) >= 0) && 
                  (PS3.getAnalogHat(LeftHatX) <= highDead) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
-                 (PS3.getAnalogHat(LeftHatY) <= highDead)  {
-                   if (pow1 <= 127 {
+                 (PS3.getAnalogHat(LeftHatY) <= highDead))  {
+                   if (pow1 <= 127) {
                      pow1 ++;
                    }
              }
@@ -242,8 +242,8 @@ const int relayState = 8;
              if((PS3.getAnalogHat(LeftHatX) >= lowDead) && 
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
-                 (PS3.getAnalogHat(LeftHatY) <= highDead)  {
-                   if (pow3 <= 127 {
+                 (PS3.getAnalogHat(LeftHatY) <= highDead))  {
+                   if (pow3 <= 127) {
                      pow3 ++;
                    }
              }
@@ -256,8 +256,8 @@ const int relayState = 8;
              if((PS3.getAnalogHat(LeftHatX) >= lowDead) && 
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
-                 (PS3.getAnalogHat(LeftHatY) <= 255)  {
-                   if (pow4 <= 127 {
+                 (PS3.getAnalogHat(LeftHatY) <= 255))  {
+                   if (pow4 <= 127) {
                      pow4 ++;
                    }
              }
@@ -270,75 +270,6 @@ const int relayState = 8;
         else {
             standby = 1;
          }
-       */
-      
-       //Forward
-      if (PS3.getAnalogHat(LeftHatY) < 50 )  {      //Adjust for Deadzone
-        if (pow1 <= 127)  {
-          pow1 ++;
-        }
-        if (pow2 <= 127) {
-          pow2 ++;
-        }
-        if (pow3 <= 127) {
-          pow3 ++;
-        }
-        if (pow4 <= 127) {
-          pow4 ++;
-        }
-      }
-      //Backward
-      else if (PS3.getAnalogHat(LeftHatY) > 200)  { //Adjust for Deadzone
-          if (pow1 >= -127) {
-            pow1 --;
-          }
-          if (pow2 >= -127)  {
-            pow2 --;
-          }
-          if (pow3 >= -127)  {
-            pow3 --;
-          }
-          if (pow4 >= -127)  {
-            pow4 --;
-          }
-        }
-      //Left    1&3 positive
-      else if (PS3.getAnalogHat(LeftHatX) < 50) {   //Adjust for Deadzone
-        if (pow1 <= 127)  {
-          pow1 ++;
-        }
-        if (pow2 >= -127) {
-          pow2 --;
-        }
-        if (pow3 <= 127)  {
-          pow3 ++;
-        }
-        if (pow4 >= -127) {
-          pow4 --;
-        }
-      }
-      //Right   2&4 positive
-      else if (PS3.getAnalogHat(LeftHatX) > 200) {  //Adjust for Deadzone
-        if (pow1 >= -127)  {
-          pow1 --;
-        }
-        if (pow2 <= 127) {
-          pow2 ++;
-        }
-        if (pow3 >= -127)  {
-          pow3 --;
-        }
-        if (pow4 <= 127)  {
-          pow4 ++;
-        }
-      }      
-      else {                //Return to neutral when in Deadzone
-        pow1 = coast(pow1);
-        pow2 = coast(pow2);
-        pow3 = coast(pow3);
-        pow4 = coast(pow4);
-      }
-          
     }
       else {                //Return to neutral when L1 is released
         //standby = 1;
