@@ -11,7 +11,7 @@
 #include <spi4teensy3.h>
 #include <SPI.h>
 #endif
-
+int state;
 /*
  * Motor Driver
  */
@@ -34,6 +34,8 @@ int pow1, pow2, pow3, pow4;  //remember to rename pow# with designated motor
  */
 USB Usb;
 PS3USB PS3(&Usb); // This will just create the instance
+const int lowDead = 50;
+const int highDead = 200;
 
 /*
  * Sensors
@@ -85,11 +87,9 @@ const int RGB = 2;
  */
 int standby;
 int detectF;
-int detectB:
-int detectL:
+int detectB;
+int detectL;
 int detectR;
-int stickUD;
-int stickLF;
 
 const int relayState = 8;
 
@@ -130,8 +130,8 @@ const int relayState = 8;
   }
   
   void setup() {
-    //baud must be 9600
-  Serial.begin(9600);
+    //baud depends on communication
+  Serial.begin(115200);
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
 
@@ -141,15 +141,20 @@ const int relayState = 8;
   pinMode(Mo1, OUTPUT);
   pinMode(Mo2, OUTPUT);
   pinMode(Mo3, OUTPUT);
-  SWSerial.begin(9600);
-  SWSerial2.begin(9600);
+  SWSerial.begin(9600);                   //Must be 9600
+  SWSerial2.begin(9600);                  //Must be 9600
   //SWSerial3.begin(9600);
-  SabertoothTXPinSerial.begin(9600);
+  SabertoothTXPinSerial.begin(9600);      //Must be 9600
   //power = 0;
   pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0;
   ST.autobaud();
   ST2.autobaud();
   state = 0;
+  standby = 1;
+  detectF = 0;
+  detectB = 0;
+  detectL = 0;
+  detectR = 0;
 
     /*
     * USB Host Shield
@@ -197,6 +202,76 @@ const int relayState = 8;
   void leftControl()  {
   if (PS3.PS3Connected) {
     if (PS3.getButtonPress(L1))  {
+      /*
+        
+        Outside Neutral
+        if((PS3.getAnalogHat(LeftHatX) < lowDead) || 
+           (PS3.getAnalogHat(LeftHatX) > highDead) ||
+           (PS3.getAnalogHat(LeftHatY) < lowDead) ||
+           (PS3.getAnalogHat(LeftHatY) > highDead)) {
+           standby = 0;
+//         Mo1.1
+             if((PS3.getAnalogHat(LeftHatX) >= 0) && 
+                 (PS3.getAnalogHat(LeftHatX) <= highDead) && 
+                 (PS3.getAnalogHat(LeftHatY) >= 0) &&
+                 (PS3.getAnalogHat(LeftHatY) <= highDead)  {
+                   if (pow1 <= 127 {
+                     pow1 ++;
+                   }
+             }
+             else {
+               if (pow1 >= -127)  {
+                 pow1 --;
+               }
+             }    
+//         Mo1.2
+            if((PS3.getAnalogHat(LeftHatX) >= 0 ) &&
+               (PS3.getAnalogHat(LeftHatX) <= highDead) &&
+               (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
+               (PS3.getAnalogHat(LeftHatY) <= 255)) {
+                  if (pow2 <= 127) {
+                      pow2 ++;
+                  }
+            }
+            else  {
+              if (pow2 >= -127)  {
+                pow2 --;
+              }
+            }
+//          Mo2.1
+             if((PS3.getAnalogHat(LeftHatX) >= lowDead) && 
+                 (PS3.getAnalogHat(LeftHatX) <= 255) && 
+                 (PS3.getAnalogHat(LeftHatY) >= 0) &&
+                 (PS3.getAnalogHat(LeftHatY) <= highDead)  {
+                   if (pow3 <= 127 {
+                     pow3 ++;
+                   }
+             }
+             else {
+               if (pow3 >= -127)  {
+                 pow3 --;
+               }
+             }    
+//          Mo2.2 
+             if((PS3.getAnalogHat(LeftHatX) >= lowDead) && 
+                 (PS3.getAnalogHat(LeftHatX) <= 255) && 
+                 (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
+                 (PS3.getAnalogHat(LeftHatY) <= 255)  {
+                   if (pow4 <= 127 {
+                     pow4 ++;
+                   }
+             }
+             else {
+               if (pow4 >= -127)  {
+                 pow4 --;
+               }
+             }    
+        }
+        else {
+            standby = 1;
+         }
+       */
+      
        //Forward
       if (PS3.getAnalogHat(LeftHatY) < 50 )  {      //Adjust for Deadzone
         if (pow1 <= 127)  {
@@ -266,6 +341,7 @@ const int relayState = 8;
           
     }
       else {                //Return to neutral when L1 is released
+        //standby = 1;
         pow1 = coast(pow1);
         pow2 = coast(pow2);
         pow3 = coast(pow3);
@@ -362,9 +438,9 @@ const int relayState = 8;
 
   void controllerReport() {
   Serial.print("Hats: ");
-  Serial.print(PS3.getAnalogHat(LeftHatY));
+  Serial.print(PS3.getAnalogHat(LeftHatX));
   Serial.print("    ");
-  Serial.println(PS3.getAnalogHat(LeftHatX));
+  Serial.println(PS3.getAnalogHat(LeftHatY));
   Serial.print("Power Levels: ");
   Serial.print(pow1);
   Serial.print("    ");
@@ -391,17 +467,8 @@ void loop() {
   buttonPress();        //Check for Relay Switch
   relay();              //Update Relay
 //  ping();             //Ping Sensors
-//  controllerReport(); //Serial Print Controller to Monitor
-/*
-Serial.print(pow1);  //If all motors share "power", they all move in the same direction and speed
-Serial.print("  ");
-Serial.print(pow2);
-Serial.print("  ");
-Serial.print(pow3);
-Serial.print("  ");
-Serial.print(pow4);
-Serial.println();
-*/
+  controllerReport(); //Serial Print Controller to Monitor
+
 //Serial.println(state);
   /*
    * Send final motor values to drivers
