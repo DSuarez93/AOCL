@@ -27,7 +27,7 @@ Sabertooth ST2(129);                        //check second motor drive alternati
                                             //Does third motor need a different address?
 //int power;
 int pow1, pow2, pow3, pow4;  //remember to rename pow# with designated motor
-
+                             //127 is the fastest a motor can go
 /*
  * USB Host Shield
  */
@@ -184,38 +184,62 @@ const int relayState = 8;
     if (PS3.getButtonPress(L1))  {
        //Forward
       if (PS3.getAnalogHat(LeftHatY) < 50 )  {      //Adjust for Deadzone
-        if (pow1 < 127)  {
+        if (pow1 <= 127)  {
           pow1 ++;
         }
-        if (pow2 < 127) {
+        if (pow2 <= 127) {
           pow2 ++;
+        }
+        if (pow3 <= 127) {
+          pow3 ++;
+        }
+        if (pow4 <= 127) {
+          pow4 ++;
         }
       }
       //Backward
       else if (PS3.getAnalogHat(LeftHatY) > 200)  { //Adjust for Deadzone
-          if (pow1 > -127) {
+          if (pow1 >= -127) {
             pow1 --;
           }
-          if (pow2 > -127)  {
+          if (pow2 >= -127)  {
             pow2 --;
           }
+          if (pow3 >= -127)  {
+            pow3 --;
+          }
+          if (pow4 >= -127)  {
+            pow4 --;
+          }
         }
-      //Left
+      //Left    1&3 positive
       else if (PS3.getAnalogHat(LeftHatX) < 50) {   //Adjust for Deadzone
-        if (pow1 < 127)  {
+        if (pow1 <= 127)  {
           pow1 ++;
         }
-        if (pow2 > -127) {
+        if (pow2 >= -127) {
           pow2 --;
         }
+        if (pow3 <= 127)  {
+          pow3 ++;
+        }
+        if (pow4 >= -127) {
+          pow4 --;
+        }
       }
-      //Right
+      //Right   2&4 positive
       else if (PS3.getAnalogHat(LeftHatX) > 200) {  //Adjust for Deadzone
-        if (pow1 > -127)  {
+        if (pow1 >= -127)  {
           pow1 --;
         }
-        if (pow2 < 127) {
+        if (pow2 <= 127) {
           pow2 ++;
+        }
+        if (pow3 >= -127)  {
+          pow3 --;
+        }
+        if (pow4 <= 127)  {
+          pow4 ++;
         }
       }      
       else {                //Return to neutral when in Deadzone
@@ -235,6 +259,15 @@ const int relayState = 8;
     }
  }
 
+  void boundaryCheck(int variable)  {
+    if (variable > 127) {
+      variable = 127;
+    }
+    if (variable <-127) {
+      variable = -127;
+    }
+  }
+  
   void buttonPress()  {
     
    if (PS3.PS3Connected) {
@@ -252,8 +285,8 @@ const int relayState = 8;
   }
 
   void relay()  {         //Affected by ButtonPress
-    if (state == 0) digitalWrite(relayState, HIGH);
-    else digitalWrite(relayState, LOW);
+    if (state == 1) digitalWrite(relayState, LOW);
+    else if (state == 0) digitalWrite(relayState, HIGH);
   }
   
   void ping() {
