@@ -15,12 +15,16 @@
 /*
  * Motor Driver
  */
-const int Mo1 = 16;
+const int Mo1 = 17;
 const int Mo2 = 18;
-//Sabertooth ST(128);   //first motor drive
+const int Mo3 = 14;
+//Sabertooth ST(128);                       //first motor drive
 SoftwareSerial SWSerial(NOT_A_PIN, Mo1);
+//SoftwareSerial SWSerial2(NOT_A_PIN, Mo2);
+//SoftwareSerial SWSerial3(NOT_A_PIN, Mo3);
 Sabertooth ST(128, SWSerial);
-Sabertooth ST2(129);         //check second motor drive alternative address
+Sabertooth ST2(129);                        //check second motor drive alternative address
+                                            //Does third motor need a different address?
 //int power;
 int pow1, pow2, pow3, pow4;  //remember to rename pow# with designated motor
 
@@ -33,37 +37,111 @@ PS3USB PS3(&Usb); // This will just create the instance
 /*
  * Sensors
  */
-const int USt1 = 5;
-const int USe1 = 6;
+//Digital Ultrasonic Sensors
+//t means transmit, e means echo
+const int USt1 = 22;
+const int USe1 = 23;
+const int USt2 = 24;
+const int USe2 = 25;
+const int USt3 = 26;
+const int USe3 = 27;
+const int USt4 = 28;
+const int USe4 = 29;
+const int USt5 = 30;
+const int USe5 = 31;
+const int USt6 = 32;
+const int USe6 = 33;
+const int USt7 = 34;
+const int USe7 = 35;
+const int USt8 = 36;
+const int USe8 = 37;
+const int USt9 = 38;
+const int USe9 = 39;
+const int USt10 = 40;
+const int USe10 = 41;
+const int USt11 = 42;
+const int USe11 = 43;
+const int USt12 = 44;
+const int USe12 = 45;
 long duration, inches, cm;
 long duration2, duration3, duration4;
+
+//Analog Light Sensors
+const int Li1 = 10;
+const int Li2 = 7;
+const int Li3 = 8;
+const int Li4 = 9;
+//Analog Infrared Sensors
+const int ir1 = 13;
+const int ir2 = 12;
+const int ir3 = 11;
+
+//RBG
+const int RGB = 2;
+
 
 int state = 0;
 const int relayState = 8;
 
+    void Output() {
+    pinMode(RGB, OUTPUT);
+    //Front Transmitters
+    pinMode(USt1, OUTPUT);
+    pinMode(USt2, OUTPUT);
+    pinMode(USt3, OUTPUT);
+    pinMode(USt4, OUTPUT);
+    //Rear Transmitters
+    pinMode(USt5, OUTPUT);
+    pinMode(USt6, OUTPUT);
+    pinMode(USt7, OUTPUT);
+    pinMode(USt8, OUTPUT);
+    //Side Transmitters
+    pinMode(USt9, OUTPUT);
+    pinMode(USt10, OUTPUT);
+    pinMode(USt11, OUTPUT);
+    pinMode(USt12, OUTPUT);
+  }
+  void Input () {
+      //Front Echoes
+    pinMode(USe1, INPUT);
+    pinMode(USe2, INPUT);
+    pinMode(USe3, INPUT);
+    pinMode(USe4, INPUT);
+      //Rear Echoes
+    pinMode(USe5, INPUT);
+    pinMode(USe6, INPUT);
+    pinMode(USe7, INPUT);
+    pinMode(USe8, INPUT);
+      //Side Echoes
+    pinMode(USe9, INPUT);
+    pinMode(USe10, INPUT);
+    pinMode(USe11, INPUT);
+    pinMode(USe12, INPUT);
+  }
+  
   void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
 
-  /*
-   * Motor Driver
-   */
+    /*
+    * Motor Driver
+    */
   pinMode(Mo1, OUTPUT);
   pinMode(Mo2, OUTPUT);
-  SWSerial.begin(9600);
-  SabertoothTXPinSerial.begin(9600);
+  SWSerial.begin(115200);
+  SabertoothTXPinSerial.begin(115200);
   //power = 0;
   pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0;
   Sabertooth::autobaud(SabertoothTXPinSerial);
   state = 0;
 
-  /*
-   * USB Host Shield
-   */
-  #if !defined(__MIPSEL__)
-    while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
-  #endif
+    /*
+    * USB Host Shield
+    */
+    #if !defined(__MIPSEL__)
+      while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
+    #endif
     if (Usb.Init() == -1) {
       Serial.print(F("\r\nOSC did not start"));
       while (1) {
@@ -75,8 +153,8 @@ const int relayState = 8;
     Serial.println(F("\r\nPS3 USB Library Started"));
     digitalWrite(13, LOW);
     delay(300);
-    pinMode(USt1, OUTPUT);
-    pinMode(USe1, INPUT);
+    Output();
+    Input();
   }
 
   int coast(int variable)  {
@@ -180,8 +258,30 @@ const int relayState = 8;
   
   void ping() {
     digitalWrite(USt1, LOW);
+    digitalWrite(USt2, LOW);  
+    digitalWrite(USt3, LOW);  
+    digitalWrite(USt4, LOW); 
+    digitalWrite(USt5, LOW);  
+    digitalWrite(USt6, LOW);  
+    digitalWrite(USt7, LOW);  
+    digitalWrite(USt8, LOW);    
+    digitalWrite(USt9, LOW);  
+    digitalWrite(USt10, LOW);  
+    digitalWrite(USt11, LOW);  
+    digitalWrite(USt12, LOW);     
     delayMicroseconds(2);
     digitalWrite(USt1, HIGH);
+    digitalWrite(USt2, HIGH);  
+    digitalWrite(USt3, HIGH);  
+    digitalWrite(USt4, HIGH); 
+    digitalWrite(USt5, HIGH);  
+    digitalWrite(USt6, HIGH);  
+    digitalWrite(USt7, HIGH);  
+    digitalWrite(USt8, HIGH);    
+    digitalWrite(USt9, HIGH);  
+    digitalWrite(USt10, HIGH);  
+    digitalWrite(USt11, HIGH);  
+    digitalWrite(USt12, HIGH);     
     delayMicroseconds(10);
     duration = pulseIn(USe1, HIGH);  
     inches = microsecondsToInches(duration);
@@ -259,3 +359,4 @@ void loop() {
     digitalWrite(13, HIGH);
   }
   else digitalWrite(13, LOW);
+}
