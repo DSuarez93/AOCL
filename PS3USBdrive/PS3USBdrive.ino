@@ -221,19 +221,19 @@ const int relayState2 = 7;
                  (PS3.getAnalogHat(LeftHatX) <= highDead) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                  if (pow1 <= 127) {
-                      if (pow1 <= 80)  {
-                        pow1 += 5;
+                  if (pow4 <= 127) {
+                      if (pow4 <= 80)  {
+                        pow4 += 5;
                       }
-                      else pow1 ++;
+                      else pow4 ++;
                    }
              }
              else {
-               if (pow1 >= -127)  {   
-                  if (pow1 >= -80)  {
-                        pow1 -= 5;
+               if (pow4 >= -127)  {   
+                  if (pow4 >= -80)  {
+                        pow4 -= 5;
                   }
-                  else pow1 --;
+                  else pow4 --;
                }
              }    
 //         Mo1.2
@@ -281,19 +281,19 @@ const int relayState2 = 7;
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                  (PS3.getAnalogHat(LeftHatY) <= 255))  {
-                   if (pow4 <= 127) {
-                      if (pow4 <= 80)  {
-                        pow4 += 5;
+                   if (pow1 <= 127) {
+                      if (pow1 <= 80)  {
+                        pow1 += 5;
                       }
-                      else pow4 ++;
+                      else pow1 ++;
                    }
              }
              else {
-               if (pow4 >= -127)  {   
-                  if (pow4 >= -80)  {
-                        pow4 -= 5;
+               if (pow1 >= -127)  {   
+                  if (pow1 >= -80)  {
+                        pow1 -= 5;
                   }
-                  else pow4 --;
+                  else pow1 --;
                }
              }       
         }
