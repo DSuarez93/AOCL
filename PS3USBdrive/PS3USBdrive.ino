@@ -2,6 +2,9 @@
   HOW TO OPERATE
   Connect PS3 controller via USB
   HOLD down L1, then use Left Stick to move motors in certain direction
+  To switch relay, HOLD down L2, then press X
+  To switch to Scissor, HOLD down L2, then press Triangle
+  Hold down L1, then use Right Stick to move Scissor
 */
 #include <Sabertooth.h>
 #include <PS3USB.h>
@@ -25,10 +28,14 @@ SoftwareSerial SWSerial2(NOT_A_PIN, Mo2);
 Sabertooth ST(128, SWSerial);
 Sabertooth ST2(129, SWSerial2);
 //Sabertooth ST2(129);                        //check second motor drive alternative address
-                                            //Does third motor need a different address?
+//Sabertooth ST3(128, SWSerial3);               //Does third motor need a different address?
 //int power;
-int pow1, pow2, pow3, pow4;  //remember to rename pow# with designated motor
-                             //127 is the fastest a motor can go
+int pow1, pow2, pow3, pow4, pow5;  //remember to rename pow# with designated motor
+const int maxp = 40;        //127 is the fastest a motor can go
+const int wane = 10;         //Transition speed
+const int scis = 127;        //For Scissor Lift Drive, 127 is stop
+const int sciu = 200;        //255 is up at full speed
+const int scid = 55;         //0 is down at full speed
 /*
  * USB Host Shield
  */
@@ -86,6 +93,7 @@ const int RGB = 2;
  *  Behavioral States
  */
  bool state;
+ bool Oswitch;
 int standby;
 int detectF;
 int detectB;
@@ -145,13 +153,15 @@ const int relayState2 = 7;
     pinMode(Mo3, OUTPUT);
     SWSerial.begin(9600);                   //Must be 9600
     SWSerial2.begin(9600);                  //Must be 9600
-    //SWSerial3.begin(9600);
+//    SWSerial3.begin(9600);                  //Must be 9600
     SabertoothTXPinSerial.begin(9600);      //Must be 9600
     //power = 0;
-    pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0;
+    pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0; pow5 = 127;
     ST.autobaud();
     ST2.autobaud();
+//    ST3.autobaud();
     state = true;
+    Oswitch = true;
     standby = 1;
     detectF = 0;
     detectB = 0;
@@ -205,10 +215,33 @@ const int relayState2 = 7;
     return variable;
   }
 
+  void rightControl() {
+    if (PS3.PS3Connected) {
+      if (PS3.getButtonPress(L1))  {
+//        DeadZone
+        if((PS3.getAnalogHat(RightHatY) < lowDead) || 
+           (PS3.getAnalogHat(RightHatY) > highDead)) {
+              standby = 0;
+              if (PS3.getAnalogHat(RightHatY) >= highDead) {
+                pow5 = sciu;
+              }
+              if (PS3.getAnalogHat(RightHatY) <= lowDead) {
+                pow5 = scid;
+              }
+           }
+      }
+      else {
+        standby = 1;
+      }
+    }
+    else {
+      standby = 1;
+    }
+  }
+
   void leftControl()  {
   if (PS3.PS3Connected) {
     if (PS3.getButtonPress(L1))  {
-      
         
 //        DeadZone
         if((PS3.getAnalogHat(LeftHatX) < lowDead) || 
@@ -221,19 +254,19 @@ const int relayState2 = 7;
                  (PS3.getAnalogHat(LeftHatX) <= highDead) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                  if (pow4 <= 127) {
-                      if (pow4 <= 80)  {
-                        pow4 += 5;
+                  if (pow3 <= maxp) {
+                      if (pow3 <= wane)  {
+                        pow3 += 5;
                       }
-                      else pow4 ++;
+                      else pow3 ++;
                    }
              }
              else {
-               if (pow4 >= -127)  {   
-                  if (pow4 >= -80)  {
-                        pow4 -= 5;
+               if (pow3 >= -maxp)  {   
+                  if (pow3 >= -wane)  {
+                        pow3 -= 5;
                   }
-                  else pow4 --;
+                  else pow3 --;
                }
              }    
 //         Mo1.2
@@ -241,19 +274,19 @@ const int relayState2 = 7;
                (PS3.getAnalogHat(LeftHatX) <= highDead) &&
                (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                (PS3.getAnalogHat(LeftHatY) <= 255)) {
-                  if (pow2 <= 127) {
-                      if (pow2 <= 80)  {
-                        pow2 += 5;
+                  if (pow4 >= -maxp) {
+                      if (pow4 >= -wane)  {
+                        pow4 -= 5;
                       }
-                      else pow2 ++;
+                      else pow4 --;
                    }
              }
              else {
-               if (pow2 >= -127)  {   
-                  if (pow2 >= -80)  {
-                        pow2 -= 5;
+               if (pow4 <= maxp)  {   
+                  if (pow4 <= wane)  {
+                        pow4 += 5;
                   }
-                  else pow2 --;
+                  else pow4 ++;
                }
              }   
 //          Mo2.1
@@ -261,19 +294,19 @@ const int relayState2 = 7;
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                   if (pow3 <= 127) {
-                      if (pow3 <= 80)  {
-                        pow3 += 5;
+                   if (pow1 <= maxp) {
+                      if (pow1 <= wane)  {
+                        pow1 += 5;
                       }
-                      else pow3 ++;
+                      else pow1 ++;
                    }
              }
              else {
-               if (pow3 >= -127)  {   
-                  if (pow3 >= -80)  {
-                        pow3 -= 5;
+               if (pow1 >= -maxp)  {   
+                  if (pow1 >= -wane)  {
+                        pow1 -= 5;
                   }
-                  else pow3 --;
+                  else pow1 --;
                }
              }    
 //          Mo2.2 
@@ -281,19 +314,19 @@ const int relayState2 = 7;
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                  (PS3.getAnalogHat(LeftHatY) <= 255))  {
-                   if (pow1 <= 127) {
-                      if (pow1 <= 80)  {
-                        pow1 += 5;
+                   if (pow2 >= -maxp) {
+                      if (pow2 >= -wane)  {
+                        pow2 -= 5;
                       }
-                      else pow1 ++;
+                      else pow2 --;
                    }
              }
              else {
-               if (pow1 >= -127)  {   
-                  if (pow1 >= -80)  {
-                        pow1 -= 5;
+               if (pow2 <= maxp)  {   
+                  if (pow2 <= wane)  {
+                        pow2 += 5;
                   }
-                  else pow1 --;
+                  else pow2 ++;
                }
              }       
         }
@@ -308,18 +341,18 @@ const int relayState2 = 7;
  }
 
   void boundaryCheck(int variable)  {
-    if (variable > 127) {
-      variable = 127;
+    if (variable > maxp) {
+      variable = maxp;
     }
-    if (variable < -127) {
-      variable = -127;
+    if (variable < -maxp) {
+      variable = -maxp;
     }
   }
   
   void buttonPress()  {
     
    if (PS3.PS3Connected) {
-//      if (PS3.getButtonPress(L2))  {
+      if (PS3.getButtonPress(L2))  {
           if (PS3.getButtonClick(CROSS)) {
            if (!state) {
             state = true;
@@ -327,7 +360,15 @@ const int relayState2 = 7;
           else {
             state = false;
           }
-//        }
+        }
+          if (PS3.getButtonClick(TRIANGLE)) {
+            if (!Oswitch) {
+              Oswitch = true;
+            }
+            else {
+              Oswitch = false;
+            }
+          }
       }
     } 
   }
@@ -338,6 +379,7 @@ const int relayState2 = 7;
       pow2 = coast(pow2);
       pow3 = coast(pow3);
       pow4 = coast(pow4);
+      pow5 = scis;
     }
     if (!state) { 
       digitalWrite(relayState, HIGH); 
@@ -409,7 +451,9 @@ const int relayState2 = 7;
   Serial.print("Hats: ");
   Serial.print(PS3.getAnalogHat(LeftHatX));
   Serial.print("    ");
-  Serial.println(PS3.getAnalogHat(LeftHatY));
+  Serial.print(PS3.getAnalogHat(LeftHatY));
+  Serial.print("    ");
+  Serial.println(PS3.getAnalogHat(RightHatY));
   Serial.print("Power Levels: ");
   Serial.print(pow1);
   Serial.print("    ");
@@ -419,6 +463,9 @@ const int relayState2 = 7;
   Serial.print("    ");
   Serial.print(pow4);
   Serial.print("    ");
+  Serial.print(pow5);
+  Serial.print("    ");
+  Serial.print("States: ");
   }
   
 long microsecondsToInches(long microseconds)  {
@@ -433,6 +480,7 @@ long microsecondsToInches(long microseconds)  {
 void loop() {
   Usb.Task();           //Check PS3 Connection
   leftControl();        //Check for Left Stick
+  rightControl();       //Check for Right Stick
   buttonPress();        //Check for Relay Switch
   relay();              //Update Relay & Standby
 //  ping();             //Ping Sensors
@@ -446,6 +494,7 @@ Serial.print("Relay pins:   "); Serial.print(digitalRead(relayState)); Serial.pr
   ST.motor(2, pow2);
   ST2.motor(1, pow3);
   ST2.motor(2, pow4);
+  //ST3.drive(pow5);
   //ST.turn(power);
   delay(50);
   if (pow1 == 0 && pow2 == 0 && pow3 == 0 && pow4 == 0) {
@@ -453,3 +502,4 @@ Serial.print("Relay pins:   "); Serial.print(digitalRead(relayState)); Serial.pr
   }
   else digitalWrite(13, LOW);
 }
+
