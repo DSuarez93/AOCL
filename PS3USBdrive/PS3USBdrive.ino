@@ -219,9 +219,41 @@ const int relayState2 = 7;
     if (PS3.PS3Connected) {
       if (PS3.getButtonPress(L1))  {
 //        DeadZone
+      standby = 2;
+        if ((PS3.getAnalogHat(RightHatX) < lowDead) ||
+           (PS3.getAnalogHat(RightHatX) > highDead)) {
+              if( (PS3.getAnalogHat(RightHatX) >= 0) && (PS3.getAnalogHat(RightHatX) <=highDead)) {
+              if (pow3 <= maxp) {
+                if (pow3 <= wane)  {
+                        pow3 += 5;
+                      }
+                      else pow3 ++;
+                   }                 
+              }
+              if (pow2 >= -maxp) {
+                  if (pow2 >= -wane)  {
+                        pow2 -= 5;
+                      }
+                      else pow2 --;
+                   }
+              if ( (PS3.getAnalogHat(RightHatX) >= lowDead) && (PS3.getAnalogHat(RightHatX) <= 255)) {
+               if (pow4 <= maxp) {
+                  if (pow4 <= wane)  {
+                        pow4 += 5;
+                      }
+                      else pow4 ++;
+                   }                                  
+              if (pow1 >= -maxp) {
+                  if (pow1 >= -wane)  {
+                        pow1 -= 5;
+                      }
+                      else pow1 --;
+                   }
+              }
+           }
         if((PS3.getAnalogHat(RightHatY) < lowDead) || 
            (PS3.getAnalogHat(RightHatY) > highDead)) {
-              standby = 0;
+              //standby = 0;
               if (PS3.getAnalogHat(RightHatY) >= highDead) {
                 pow5 = sciu;
               }
@@ -229,20 +261,15 @@ const int relayState2 = 7;
                 pow5 = scid;
               }
            }
-      }
       else {
         standby = 1;
       }
     }
-    else {
-      standby = 1;
-    }
   }
-
+  }
   void leftControl()  {
   if (PS3.PS3Connected) {
     if (PS3.getButtonPress(L1))  {
-        
 //        DeadZone
         if((PS3.getAnalogHat(LeftHatX) < lowDead) || 
            (PS3.getAnalogHat(LeftHatX) > highDead) ||
@@ -480,7 +507,7 @@ long microsecondsToInches(long microseconds)  {
 void loop() {
   Usb.Task();           //Check PS3 Connection
   leftControl();        //Check for Left Stick
-  rightControl();       //Check for Right Stick
+//rightControl();       //Check for Right Stick
   buttonPress();        //Check for Relay Switch
   relay();              //Update Relay & Standby
 //  ping();             //Ping Sensors
