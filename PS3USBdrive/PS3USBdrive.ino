@@ -88,6 +88,10 @@ const int ir3 = 11;
 
 //RBG
 const int RGB = 2;
+const int SDA = 14;
+const int SCL = 15;
+const int INT = 53;
+const int zpin = 9;
 
 /*
  *  Behavioral States
@@ -269,6 +273,7 @@ const int relayState2 = 7;
   }
   void leftControl()  {
   if (PS3.PS3Connected) {
+//    if (analogRead(zpin) < 20) {              //uncomment for accelerometer
     if (PS3.getButtonPress(L1))  {
 //        DeadZone
         if((PS3.getAnalogHat(LeftHatX) < lowDead) || 
@@ -364,6 +369,7 @@ const int relayState2 = 7;
       else {                //Return to neutral when L1 is released
         standby = 1;
       }                     //Disconnect is same as L1 is released.
+//    }                     //Uncomment for accelerometer
     }
  }
 
