@@ -13,7 +13,8 @@ Sabertooth ST2(129, SWSerial2);
 //Sabertooth ST3(128, SWSerial3);               //Does third motor need a different address?
 //int power;
 int pow1, pow2, pow3, pow4, pow5;  //remember to rename pow# with designated motor
-const int maxp = 40;        //127 is the fastest a motor can go
+      int maxp;        //127 is the fastest a motor can go
+const int tops = 40;
 const int wane = 20;         //Transition speed
 const int scis = 127;        //For Scissor Lift Drive, 127 is stop
 const int sciu = 200;        //255 is up at full speed
@@ -34,6 +35,7 @@ void motorSetup() {
 //    SWSerial3.begin(9600);                  //Must be 9600
     SabertoothTXPinSerial.begin(9600);      //Must be 9600
     //power = 0;
+    maxp = tops;
     pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0; pow5 = 127;
     ST.autobaud();
     ST2.autobaud();

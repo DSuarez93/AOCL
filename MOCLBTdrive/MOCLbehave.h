@@ -46,7 +46,7 @@ void initConnect() {
   }
   Serial.print(F("\r\nPS3 Bluetooth Library Started"));
   delay(100);
-  state = true;
+  state = false;        //state in Drive State. true if in Lift State
 }
 
 void relay()  {         //Affected by ButtonPress
@@ -68,8 +68,6 @@ void relay()  {         //Affected by ButtonPress
 }
 
 void buttonPress()  {
-    
-   if (PS3.PS3Connected) {
       if (PS3.getAnalogButton(L2))  {
           if (PS3.getButtonClick(CROSS)) {
            state = !state;
@@ -95,5 +93,201 @@ void buttonPress()  {
             }
           }
       }
-    } 
  }
+
+   void leftControl()  {
+//    if (analogRead(zpin) < 20) {              //uncomment for accelerometer
+    if (PS3.getButtonPress(L1))  {
+//        DeadZone
+        if(!state && (
+           (PS3.getAnalogHat(LeftHatX) < lowDead) || 
+           (PS3.getAnalogHat(LeftHatX) > highDead) ||
+           (PS3.getAnalogHat(LeftHatY) < lowDead) ||
+           (PS3.getAnalogHat(LeftHatY) > highDead))) {
+           standby = 0;
+//         Mo1.1
+             if((PS3.getAnalogHat(LeftHatX) >= 0) && 
+                 (PS3.getAnalogHat(LeftHatX) <= highDead) && 
+                 (PS3.getAnalogHat(LeftHatY) >= 0) &&
+                 (PS3.getAnalogHat(LeftHatY) <= highDead))  {
+                  if (pow3 <= maxp) {
+                      if (pow3 <= wane)  {
+                        pow3 += 5;
+                      }
+                      else pow3 ++;
+                   }
+             }
+             else {
+               if (pow3 >= -maxp)  {   
+                  if (pow3 >= -wane)  {
+                        pow3 -= 5;
+                  }
+                  else pow3 --;
+               }
+             }    
+//         Mo1.2
+            if((PS3.getAnalogHat(LeftHatX) >= 0 ) &&
+               (PS3.getAnalogHat(LeftHatX) <= highDead) &&
+               (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
+               (PS3.getAnalogHat(LeftHatY) <= 255)) {
+                  if (pow4 >= -maxp) {
+                      if (pow4 >= -wane)  {
+                        pow4 -= 5;
+                      }
+                      else pow4 --;
+                   }
+             }
+             else {
+               if (pow4 <= maxp)  {   
+                  if (pow4 <= wane)  {
+                        pow4 += 5;
+                  }
+                  else pow4 ++;
+               }
+             }   
+//          Mo2.1
+             if((PS3.getAnalogHat(LeftHatX) >= lowDead) && 
+                 (PS3.getAnalogHat(LeftHatX) <= 255) && 
+                 (PS3.getAnalogHat(LeftHatY) >= 0) &&
+                 (PS3.getAnalogHat(LeftHatY) <= highDead))  {
+                   if (pow1 <= maxp) {
+                      if (pow1 <= wane)  {
+                        pow1 += 5;
+                      }
+                      else pow1 ++;
+                   }
+             }
+             else {
+               if (pow1 >= -maxp)  {   
+                  if (pow1 >= -wane)  {
+                        pow1 -= 5;
+                  }
+                  else pow1 --;
+               }
+             }    
+//          Mo2.2 
+             if((PS3.getAnalogHat(LeftHatX) >= lowDead) && 
+                 (PS3.getAnalogHat(LeftHatX) <= 255) && 
+                 (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
+                 (PS3.getAnalogHat(LeftHatY) <= 255))  {
+                   if (pow2 >= -maxp) {
+                      if (pow2 >= -wane)  {
+                        pow2 -= 5;
+                      }
+                      else pow2 --;
+                   }
+             }
+             else {
+               if (pow2 <= maxp)  {   
+                  if (pow2 <= wane)  {
+                        pow2 += 5;
+                  }
+                  else pow2 ++;
+               }
+             }       
+        } else standby = 1;    //Return when inside DeadZone
+    }  else standby = 1;       //Return to neutral when L1 is released                     
+//    }                     //Uncomment for accelerometer
+ }
+
+void rightControl() {
+    if (standby != 0 && !state) {
+      if (PS3.getButtonPress(L1))  {
+//        DeadZone
+        if ( 
+           (PS3.getAnalogHat(RightHatX) < lowDead) ||
+           (PS3.getAnalogHat(RightHatX) > highDead)) {
+            standby = 2;
+              if((PS3.getAnalogHat(RightHatX) <= highDead)) {     //right stick is left
+              if (pow3 >= -maxp) {
+                if (pow3 >= -wane)  {
+                        pow3 -= 5;
+                      }
+                      else pow3 --;
+                   }
+              if (pow4 >= -maxp) {
+                if (pow4 >= -wane)  {
+                        pow4 -= 5;
+                      }
+                      else pow4 --;
+                   }
+              if (pow2 <= maxp) {
+                  if (pow2 <= wane)  {
+                        pow2 += 5;
+                      }
+                      else pow2 ++;
+                   }
+              if (pow1 <= maxp) {
+                  if (pow1 <= wane)  {
+                        pow1 += 5;
+                      }
+                      else pow1 ++;
+                   }               
+              }
+              if ((PS3.getAnalogHat(RightHatX) >= lowDead)) {     //right stick is right
+               if (pow3 <= maxp) {
+                  if (pow3 <= wane)  {
+                        pow3 += 5;
+                      }
+                      else pow3 ++;
+                   }               
+               if (pow4 <= maxp) {
+                  if (pow4 <= wane)  {
+                        pow4 += 5;
+                      }
+                      else pow4 ++;
+                   }
+              if (pow2 >= -maxp) {
+                  if (pow2 >= -wane)  {
+                        pow2 -= 5;
+                      }
+                      else pow2 --;
+                   }                                                     
+              if (pow1 >= -maxp) {
+                  if (pow1 >= -wane)  {
+                        pow1 -= 5;
+                      }
+                      else pow1 --;
+                   }
+              }
+           }  
+    } 
+  } 
+}
+
+void scissorLift() {
+  if (state) {
+    if (PS3.getAnalogButton(L2)) {
+      standby = 3;                    //incorperate limit switch conditions
+      if (PS3.getButtonPress(UP)) {
+        pow5 = sciu;                  //raise scissor lift
+      }
+      else if (PS3.getButtonPress(DOWN)) {
+        pow5 = scid;                  //lower scissor lift
+      }
+      else pow5 = scis;
+    } else pow5 = scis;
+  } else pow5 = scis;
+}
+ 
+  void controllerReport() {
+  Serial.print("Hats: ");
+  Serial.print(PS3.getAnalogHat(LeftHatX));
+  Serial.print("    ");
+  Serial.print(PS3.getAnalogHat(LeftHatY));
+  Serial.print("    ");
+  Serial.println(PS3.getAnalogHat(RightHatY));
+  Serial.print("Power Levels: ");
+  Serial.print(pow1);
+  Serial.print("    ");
+  Serial.print(pow2);
+  Serial.print("    ");
+  Serial.print(pow3);
+  Serial.print("    ");
+  Serial.print(pow4);
+  Serial.print("    ");
+  Serial.print(pow5);
+  Serial.print("    ");
+  Serial.print("States: ");
+  }
+ 

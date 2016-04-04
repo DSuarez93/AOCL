@@ -61,14 +61,14 @@ bool backSignal;
     for (int i = 0; i<sensorSize; i++) {
       pinMode(transmitters[i], OUTPUT);
     }
-    leftSignal = false;
-    rightSignal = false;
-    frontSignal = false;
-    backSignal = false;
+    leftSignal = false;                   //check for US sensors 2, 3, 4, 5
+    rightSignal = false;                  //check for US sensors 8, 9, 10, 11
+    frontSignal = false;                  //check for IR sensor 1 & US sensors 6, 7
+    backSignal = false;                   //check for IR sensor 2 & US sensors 11, 12
   }
   void Input () {
     for (int i = 0; i<sensorSize; i++) {
-      pinMode(echoes[i], OUTPUT);
+      pinMode(echoes[i], INPUT);
     }
   }
   void ping() {
@@ -83,5 +83,41 @@ bool backSignal;
     for (int i = 0; i<sensorSize; i++) {
       digitalWrite(transmitters[i], LOW);
     }
+  }
+
+
+int retrieve2() {
+    int duration = pulseIn(echoes[2], HIGH);
+    duration = duration / 74 / 2;
+    return duration;
+  }
+int retrieve3() {
+    int duration = pulseIn(echoes[3], HIGH);
+    duration = duration / 74 / 2;
+    return duration;
+  }
+
+  void flagger() {
+      if ((retrieve2() < 5) || (retrieve3() <5)) {leftSignal = true;}
+      leftSignal = false;
+  }
+
+bool obstacleCollision() {
+  return false;
+}
+
+  void obstacleNearby() {
+//    Serial.print(retrieve2());
+//    Serial.print("  ");
+//    Serial.print(retrieve3());
+//    Serial.print("  ");
+//    flagger();
+    if (!PS3.getButtonPress(R1) && (leftSignal || rightSignal || frontSignal || backSignal)) {
+      maxp = wane;
+    if (obstacleCollision()) {
+      maxp = 0;
+      }
+    }
+    else maxp = tops;
   }
 
