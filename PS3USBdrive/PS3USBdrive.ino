@@ -88,8 +88,8 @@ const int ir3 = 11;
 
 //RBG
 const int RGB = 2;
-const int SDA = 14;
-const int SCL = 15;
+//const int SDA = 14;
+//const int SCL = 15;
 const int INT = 53;
 const int zpin = 9;
 
@@ -387,12 +387,7 @@ const int relayState2 = 7;
    if (PS3.PS3Connected) {
       if (PS3.getButtonPress(L2))  {
           if (PS3.getButtonClick(CROSS)) {
-           if (!state) {
-            state = true;
-           }
-          else {
-            state = false;
-          }
+           !state;
         }
           if (PS3.getButtonClick(TRIANGLE)) {
             if (!Oswitch) {
@@ -534,5 +529,5 @@ Serial.print("Relay pins:   "); Serial.print(digitalRead(relayState)); Serial.pr
     digitalWrite(13, HIGH);
   }
   else digitalWrite(13, LOW);
-}
 
+}
