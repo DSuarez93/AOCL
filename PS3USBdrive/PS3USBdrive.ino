@@ -1,10 +1,9 @@
 /*
   HOW TO OPERATE
   Connect PS3 controller via USB
-  HOLD down L1, then use Left Stick to move motors in certain direction
-  To switch relay, HOLD down L2, then press X
-  To switch to Scissor, HOLD down L2, then press Triangle
-  Hold down L1, then use Right Stick to move Scissor
+  HOLD down L1, then use Left Stick to move motors in lateral direction
+  HOLD down L1, then use Right Stick to spin motors in clockwise direction
+  To switch relay, HOLD down L2, then press X. The PS3 LED should change to reflect the mode it is in
 */
 #include <Sabertooth.h>
 #include <PS3USB.h>
@@ -164,7 +163,7 @@ const int relayState2 = 7;
     ST.autobaud();
     ST2.autobaud();
 //    ST3.autobaud();
-    state = true;
+    state = false;
     Oswitch = true;
     standby = 1;
     detectF = 0;
@@ -219,34 +218,60 @@ const int relayState2 = 7;
     return variable;
   }
 
-  void rightControl() {
-    if (PS3.PS3Connected) {
+void rightControl() {
+  if (PS3.PS3Connected) {
+    if (standby != 0 && !state) {
       if (PS3.getButtonPress(L1))  {
 //        DeadZone
-      standby = 2;
-        if ((PS3.getAnalogHat(RightHatX) < lowDead) ||
+        if ( 
+           (PS3.getAnalogHat(RightHatX) < lowDead) ||
            (PS3.getAnalogHat(RightHatX) > highDead)) {
-              if( (PS3.getAnalogHat(RightHatX) >= 0) && (PS3.getAnalogHat(RightHatX) <=highDead)) {
-              if (pow3 <= maxp) {
-                if (pow3 <= wane)  {
+            standby = 2;
+              if((PS3.getAnalogHat(RightHatX) <= highDead)) {     //right stick is left
+              if (pow3 >= -maxp) {
+                if (pow3 >= -wane)  {
+                        pow3 -= 5;
+                      }
+                      else pow3 --;
+                   }
+              if (pow4 >= -maxp) {
+                if (pow4 >= -wane)  {
+                        pow4 -= 5;
+                      }
+                      else pow4 --;
+                   }
+              if (pow2 <= maxp) {
+                  if (pow2 <= wane)  {
+                        pow2 += 5;
+                      }
+                      else pow2 ++;
+                   }
+              if (pow1 <= maxp) {
+                  if (pow1 <= wane)  {
+                        pow1 += 5;
+                      }
+                      else pow1 ++;
+                   }               
+              }
+              if ((PS3.getAnalogHat(RightHatX) >= lowDead)) {     //right stick is right
+               if (pow3 <= maxp) {
+                  if (pow3 <= wane)  {
                         pow3 += 5;
                       }
                       else pow3 ++;
-                   }                 
-              }
-              if (pow2 >= -maxp) {
-                  if (pow2 >= -wane)  {
-                        pow2 -= 5;
-                      }
-                      else pow2 --;
-                   }
-              if ( (PS3.getAnalogHat(RightHatX) >= lowDead) && (PS3.getAnalogHat(RightHatX) <= 255)) {
+                   }               
                if (pow4 <= maxp) {
                   if (pow4 <= wane)  {
                         pow4 += 5;
                       }
                       else pow4 ++;
-                   }                                  
+                   }
+              if (pow2 >= -maxp) {
+                  if (pow2 >= -wane)  {
+                        pow2 -= 5;
+                      }
+                      else pow2 --;
+                   }                                                     
               if (pow1 >= -maxp) {
                   if (pow1 >= -wane)  {
                         pow1 -= 5;
@@ -254,23 +279,11 @@ const int relayState2 = 7;
                       else pow1 --;
                    }
               }
-           }
-        if((PS3.getAnalogHat(RightHatY) < lowDead) || 
-           (PS3.getAnalogHat(RightHatY) > highDead)) {
-              //standby = 0;
-              if (PS3.getAnalogHat(RightHatY) >= highDead) {
-                pow5 = sciu;
-              }
-              if (PS3.getAnalogHat(RightHatY) <= lowDead) {
-                pow5 = scid;
-              }
-           }
-      else {
-        standby = 1;
-      }
-    }
+           }  
+    } 
   }
-  }
+} 
+}
   void leftControl()  {
   if (PS3.PS3Connected) {
 //    if (analogRead(zpin) < 20) {              //uncomment for accelerometer
@@ -385,9 +398,23 @@ const int relayState2 = 7;
   void buttonPress()  {
     
    if (PS3.PS3Connected) {
-      if (PS3.getButtonPress(L2))  {
+      if (PS3.getAnalogButton(L2))  {
           if (PS3.getButtonClick(CROSS)) {
-           !state;
+           state = !state;
+           if (!state) {
+            Serial.print("\r\nDrive State");
+            PS3.setLedOff();
+            delay(300);
+            PS3.setLedOn(LED1);
+            delay(200);
+           }
+           else {
+            Serial.print("\r\nLift State");
+            PS3.setLedOff();
+            delay(300);
+            PS3.setLedOn(LED4);
+            delay(200);
+           }
         }
           if (PS3.getButtonClick(TRIANGLE)) {
             if (!Oswitch) {
@@ -508,7 +535,7 @@ long microsecondsToInches(long microseconds)  {
 void loop() {
   Usb.Task();           //Check PS3 Connection
   leftControl();        //Check for Left Stick
-//rightControl();       //Check for Right Stick
+  rightControl();       //Check for Right Stick
   buttonPress();        //Check for Relay Switch
   relay();              //Update Relay & Standby
 //  ping();             //Ping Sensors
