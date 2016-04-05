@@ -277,6 +277,7 @@ void scissorLift() {
   Serial.print(PS3.getAnalogHat(LeftHatY));
   Serial.print("    ");
   Serial.println(PS3.getAnalogHat(RightHatY));
+  delay(500);
   Serial.print("Power Levels: ");
   Serial.print(pow1);
   Serial.print("    ");

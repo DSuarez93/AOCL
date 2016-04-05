@@ -28,6 +28,7 @@
 
 void setup() {
   Serial.begin(115200);
+  Serial.setTimeout(50);
   initConnect();
   motorSetup();
   Output();
@@ -43,7 +44,6 @@ void loop() {
     rightControl();   //Check for Right Stick
     scissorLift();    //Check for Directional Pad  
     buttonPress();    //Check for Relay Switch
-    controllerReport();
     obstacleNearby();
     if (PS3.getButtonPress(R2)) {
       if (PS3.getButtonPress(L1)) {
@@ -64,10 +64,15 @@ void loop() {
           PS3.setLedOff();
           PS3.setLedOn(LED1);
       */
+//      controllerReport();
+    Serial.print("Test\n");
+    delay(200);
   }
   else standby = 1;
-
-  boundaryCheck(pow1); boundaryCheck(pow2); boundaryCheck(pow3); boundaryCheck(pow4);
+  boundaryCheck(pow1); 
+  boundaryCheck(pow2); 
+  boundaryCheck(pow3); 
+  boundaryCheck(pow4);
   /*
    * Send final motor values to drivers
    */
@@ -84,5 +89,4 @@ void loop() {
     digitalWrite(13, HIGH);
   }
   else { digitalWrite(13, LOW);  }
-
 }
