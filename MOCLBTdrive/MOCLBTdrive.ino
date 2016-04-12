@@ -27,24 +27,24 @@
 #include "MOCLsensors.h"
 
 void setup() {
-  Serial.begin(115200);
-  Serial.setTimeout(50);
+  Serial.begin(38400);
+//  Serial.setTimeout(50);
   initConnect();
   motorSetup();
-  Output();
-  Input();
+//  Output();
+//  Input();
 }
 void loop() {
   Usb.Task();      
   relay();              //Update Relay & Standby
-  ping();               //Ping Sensors
+//  ping();               //Ping Sensors
   
   if (PS3.PS3Connected) {
     leftControl();    //Check for Left Stick
     rightControl();   //Check for Right Stick
     scissorLift();    //Check for Directional Pad  
     buttonPress();    //Check for Relay Switch
-    obstacleNearby();
+//    obstacleNearby();
     if (PS3.getButtonPress(R2)) {
       if (PS3.getButtonPress(L1)) {
           if (PS3.getButtonClick(PS)) {
@@ -64,9 +64,9 @@ void loop() {
           PS3.setLedOff();
           PS3.setLedOn(LED1);
       */
-//      controllerReport();
-    Serial.print("Test\n");
-    delay(200);
+      if (millis() % 10 == 0) {
+        controllerReport();   
+      }
   }
   else standby = 1;
   boundaryCheck(pow1); 
@@ -77,14 +77,14 @@ void loop() {
    * Send final motor values to drivers
    */
 
-//  ST.motor(1, pow1);   
-//  ST.motor(2, pow2);
-//  ST2.motor(1, pow3);
-//  ST2.motor(2, pow4);
-  //ST3.drive(pow5);
+  ST.motor(1, pow1);   
+  ST.motor(2, pow2);
+  ST2.motor(1, pow3);
+  ST2.motor(2, pow4);
+  ST3.port().write(pow5);
   //ST.turn(power);
   
-  delayMicroseconds(10);
+  delay(10);
   if (pow1 == 0 && pow2 == 0 && pow3 == 0 && pow4 == 0) {
     digitalWrite(13, HIGH);
   }

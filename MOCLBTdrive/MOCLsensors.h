@@ -5,31 +5,36 @@
  #include <NewPing.h>
  #define warningDistance 8
  #define stoppingDistance 4
+ #define interval 33 //milliseconds
 //Digital Ultrasonic Sensors
 //t means transmit, e means echo
+
+const int transmitters[] = {22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44};
+const int echoes[] = {23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45};
+//const int transmitters[] = {USt[0], USt[1], USt[2], USt[3], USt[4], USt[5], USt[6], USt[7], USt[8], USt[9], USt[10], USt[11]};
+//const int echoes[] = {USe[0], USe[1], USe[2], USe[3], USe[4], USe[5], USe[6], USe[7], USe[8], USe[9], USe[10], USe[11]};
+long duration, inches, cm;
+unsigned long timer[sensorSize];
+uint8_t currentSensor;
+
 /*
  * See playground.arduino.cc/Code/NewPing
  * NewPing US[sensorSize] = { 
  * NewPing(USt[0], USe[0]),
- NewPing(USt[1], USe[1]),
- NewPing(USt[2], USe[2]),
- NewPing(USt[3], USe[3]),
- NewPing(USt[4], USe[4]),
- NewPing(USt[5], USe[5]),
- NewPing(USt[6], USe[6]),
- NewPing(USt[7], USe[7]),
- NewPing(USt[8], USe[8]),
- NewPing(USt[9], USe[9]),
- NewPing(USt[10], USe[10]),
- NewPing(USt[11], USe[11]),
- NewPing(USt[12], USe[12]),
+ NewPing(transimitters[1], echoes[1]),
+ NewPing(transimitters[2], echoes[2]),
+ NewPing(transimitters[3], echoes[3]),
+ NewPing(transimitters[4], echoes[4]),
+ NewPing(transimitters[5], echoes[5]),
+ NewPing(transimitters[6], echoes[6]),
+ NewPing(transimitters[7], echoes[7]),
+ NewPing(transimitters[8], echoes[8]),
+ NewPing(transimitters[9], echoes[9]),
+ NewPing(transimitters[10], echoes[10]),
+ NewPing(transimitters[11], echoes[11]),
+ NewPing(transimitters[12], echoes[12]),
  * };
  */
-const int USt[] = {22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44};
-const int USe[] = {23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45};
-const int transmitters[] = {USt[0], USt[1], USt[2], USt[3], USt[4], USt[5], USt[6], USt[7], USt[8], USt[9], USt[10], USt[11]};
-const int echoes[] = {USe[0], USe[1], USe[2], USe[3], USe[4], USe[5], USe[6], USe[7], USe[8], USe[9], USe[10], USe[11]};
-long duration, inches, cm;
 
 //Analog Light Sensors
 const int Li1 = 10;
@@ -58,8 +63,10 @@ bool stopFlag;
 
   void Output() {
     pinMode(RGB, OUTPUT);
+    timer[0] = millis()+75;
     for (int i = 0; i<sensorSize; i++) {
-      pinMode(transmitters[i], OUTPUT);
+      //pinMode(transmitters[i], OUTPUT);
+      timer[i+1] = timer[i] + interval;
       signals[i] = false;
     }
     /*
@@ -70,13 +77,16 @@ bool stopFlag;
     */
   }
   void Input () {
+    /*
     for (int i = 0; i<sensorSize; i++) {
       pinMode(echoes[i], INPUT);
     }
+    */
     duration = 0;
     stopFlag = false;
   }
-  void ping() {
+  void sensorping() {
+    /*
     for (int i = 0; i<sensorSize; i++) {
       digitalWrite(transmitters[i], LOW);
     }
@@ -87,6 +97,13 @@ bool stopFlag;
     delayMicroseconds(2);
     for (int i = 0; i<sensorSize; i++) {
       digitalWrite(transmitters[i], LOW);
+    }
+    */
+    for (uint8_t i = 0; i<sensorSize ; i++) {
+      if (millis() >= timer[i]) {
+        timer[i] += interval * sensorSize;
+        if (i==0 && currentSensor == sensorSize-1) Serial.println();
+      }
     }
   }
 

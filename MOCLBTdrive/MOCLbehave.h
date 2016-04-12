@@ -20,13 +20,9 @@ const int highDead = 200;
 /*
  *  Behavioral States
  */
- bool state;
- bool Oswitch;
-int standby;
-int detectF;
-int detectB;
-int detectL;
-int detectR;
+ bool state;          //relay
+unsigned int standby; //standby = 1, no movement
+unsigned int lift;    //lift direction
 
 const int relayState = 6;
 const int relayState2 = 7;
@@ -47,6 +43,7 @@ void initConnect() {
   Serial.print(F("\r\nPS3 Bluetooth Library Started"));
   delay(100);
   state = false;        //state in Drive State. true if in Lift State
+  lift = 0;
 }
 
 void relay()  {         //Affected by ButtonPress
@@ -85,12 +82,6 @@ void buttonPress()  {
            }
         }
           if (PS3.getButtonClick(TRIANGLE)) {
-            if (!Oswitch) {
-              Oswitch = true;
-            }
-            else {
-              Oswitch = false;
-            }
           }
       }
  }
@@ -260,10 +251,12 @@ void scissorLift() {
     if (PS3.getAnalogButton(L2)) {
       standby = 3;                    //incorperate limit switch conditions
       if (PS3.getButtonPress(UP)) {
-        pow5 = sciu;                  //raise scissor lift
+        pow5 = scid;                  //raise scissor lift
+//        lift = 0;
       }
       else if (PS3.getButtonPress(DOWN)) {
-        pow5 = scid;                  //lower scissor lift
+        pow5 = sciu;                  //lower scissor lift
+//        lift = 1;
       }
       else pow5 = scis;
     } else pow5 = scis;
@@ -277,7 +270,6 @@ void scissorLift() {
   Serial.print(PS3.getAnalogHat(LeftHatY));
   Serial.print("    ");
   Serial.println(PS3.getAnalogHat(RightHatY));
-  delay(500);
   Serial.print("Power Levels: ");
   Serial.print(pow1);
   Serial.print("    ");
@@ -288,6 +280,8 @@ void scissorLift() {
   Serial.print(pow4);
   Serial.print("    ");
   Serial.print(pow5);
+  Serial.print("    ");
+  Serial.print(lift);
   Serial.print("    ");
   Serial.print("States: ");
   }
