@@ -3,141 +3,150 @@
  */
  #define sensorSize 12
  #include <NewPing.h>
- #define warningDistance 8
+ #define warningDistance 6
  #define stoppingDistance 4
- #define interval 33 //milliseconds
-//Digital Ultrasonic Sensors
-//t means transmit, e means echo
+ #define interval 191 //milliseconds
+ #define switchQuantity 6
+ #define lightQuantity 4
+ #define infraredQuantity 3
+ #define infraredReference 30
+ #define lightReference 30
+ #define limitReference 30
 
-const int transmitters[] = {22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44};
-const int echoes[] = {23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45};
-//const int transmitters[] = {USt[0], USt[1], USt[2], USt[3], USt[4], USt[5], USt[6], USt[7], USt[8], USt[9], USt[10], USt[11]};
-//const int echoes[] = {USe[0], USe[1], USe[2], USe[3], USe[4], USe[5], USe[6], USe[7], USe[8], USe[9], USe[10], USe[11]};
-long duration, inches, cm;
+//Digital Ultrasonic Sensors
+const int transmitters[sensorSize] = {22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44};
+const int echoes[sensorSize] = {23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45};
+long duration, inches;
 unsigned long timer[sensorSize];
 uint8_t currentSensor;
 
-/*
- * See playground.arduino.cc/Code/NewPing
- * NewPing US[sensorSize] = { 
- * NewPing(USt[0], USe[0]),
- NewPing(transimitters[1], echoes[1]),
- NewPing(transimitters[2], echoes[2]),
- NewPing(transimitters[3], echoes[3]),
- NewPing(transimitters[4], echoes[4]),
- NewPing(transimitters[5], echoes[5]),
- NewPing(transimitters[6], echoes[6]),
- NewPing(transimitters[7], echoes[7]),
- NewPing(transimitters[8], echoes[8]),
- NewPing(transimitters[9], echoes[9]),
- NewPing(transimitters[10], echoes[10]),
- NewPing(transimitters[11], echoes[11]),
- NewPing(transimitters[12], echoes[12]),
- * };
- */
-
 //Analog Light Sensors
-const int Li1 = 10;
-const int Li2 = 7;
-const int Li3 = 8;
-const int Li4 = 9;
+const int light[lightQuantity] = {10, 7, 8, 9};       
+long lightSense[lightQuantity];
+
 //Analog Infrared Sensors
-const int ir1 = 13;
-const int ir2 = 12;
-const int ir3 = 11;
+const int infrared[infraredQuantity] = {13, 12, 11};  
+long infSense[infraredQuantity] ;                     
 
 //RBG
-const int RGB = 2;
+#define RGB 2
+
+//accelerometer needs a calibration file
 //const int SDA = 14;
 //const int SCL = 15;
-const int INT = 53;
-const int zpin = 9;
+const int INT = 53;   //digital
+const int zpin = 9;   //analog
 
-//States
-bool signals[sensorSize];
-//bool leftSignal;
-//bool rightSignal;
-//bool frontSignal;
-//bool backSignal;
+//Obstacle States
+bool closeFlag;
 bool stopFlag;
 
-  void Output() {
+//Limit Switches
+const int lSwitch[switchQuantity] = { 46, 47, 48, 49, 50, 51 };   //digital
+const int aSwitch[switchQuantity] = {  3, 4, 5, 6, 1, 2 };        //analog
+bool switchAct[switchQuantity];
+int switchRead[switchQuantity];
+ 
+/*
+ * See playground.arduino.cc/Code/NewPing
+ */
+ NewPing US[sensorSize] = { 
+    NewPing(transmitters[0], echoes[0]),
+    NewPing(transmitters[1], echoes[1]),
+    NewPing(transmitters[2], echoes[2]),
+    NewPing(transmitters[3], echoes[3]),
+    NewPing(transmitters[4], echoes[4]),
+    NewPing(transmitters[5], echoes[5]),
+    NewPing(transmitters[6], echoes[6]),
+    NewPing(transmitters[7], echoes[7]),
+    NewPing(transmitters[8], echoes[8]),
+    NewPing(transmitters[9], echoes[9]),
+    NewPing(transmitters[10], echoes[10]),
+    NewPing(transmitters[11], echoes[11])
+  };
+
+  void sensorInit () {
     pinMode(RGB, OUTPUT);
-    timer[0] = millis()+75;
+    timer[0] = millis() + 75;
     for (int i = 0; i<sensorSize; i++) {
-      //pinMode(transmitters[i], OUTPUT);
-      timer[i+1] = timer[i] + interval;
-      signals[i] = false;
-    }
-    /*
-    leftSignal = false;                   //check for US sensors 2, 3, 4, 5
-    rightSignal = false;                  //check for US sensors 8, 9, 10, 11
-    frontSignal = false;                  //check for IR sensor 1 & US sensors 6, 7
-    backSignal = false;                   //check for IR sensor 2 & US sensors 11, 12
-    */
-  }
-  void Input () {
-    /*
-    for (int i = 0; i<sensorSize; i++) {
+      pinMode(transmitters[i], OUTPUT);
       pinMode(echoes[i], INPUT);
+      timer[i+1] = timer[i] + interval;
     }
-    */
-    duration = 0;
+    Serial.println("US sensors established.");
+    duration = 0;    
+    closeFlag = false;
     stopFlag = false;
+    for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); switchAct[i] = false; }
+    Serial.println("Limit Switches established.");
+    for (uint8_t i = 0; i < infraredQuantity; i++)  {  pinMode(infrared[i], INPUT); }
+    Serial.println("Infrared Sensors established.");
+    for (uint8_t i = 0; i < lightQuantity; i++)     {  pinMode(light[i], INPUT);   }
+    Serial.println("Beacon Sensors established.");
   }
-  void sensorping() {
-    /*
-    for (int i = 0; i<sensorSize; i++) {
-      digitalWrite(transmitters[i], LOW);
+
+/*
+ * For lifting ordnance
+ */
+
+  void readLight() {
+    if (state) {
+    for (uint8_t i = 0; i < lightQuantity; i++) {
+      lightSense[i] = analogRead(light[i]);
     }
-    delayMicroseconds(10);
-    for (int i = 0; i<sensorSize; i++) {
-      digitalWrite(transmitters[i], HIGH);
-    }
-    delayMicroseconds(2);
-    for (int i = 0; i<sensorSize; i++) {
-      digitalWrite(transmitters[i], LOW);
-    }
-    */
-    for (uint8_t i = 0; i<sensorSize ; i++) {
-      if (millis() >= timer[i]) {
-        timer[i] += interval * sensorSize;
-        if (i==0 && currentSensor == sensorSize-1) Serial.println();
-      }
+    if (lightSense[0] > lightReference &&
+        lightSense[1] > lightReference &&
+        lightSense[2] > lightReference &&
+        lightSense[3] > lightReference) {
+      digitalWrite(RGB, LOW);
+    } else digitalWrite(RGB, HIGH);
     }
   }
 
-  void checkIn(int x) {
-    duration = pulseIn(echoes[x], HIGH);
-    duration = duration /74/2;
-      if (duration < warningDistance && duration > 0) {
-          signals[x] = true;
-          if (duration < stoppingDistance) {
-              stopFlag = true;
-          } else stopFlag = false;
-      } else {
-        stopFlag = false;
-        signals[x] = false;
-      }
+  void readSwitches() {
+    
   }
   
   void obstacleNearby() {
-
-    if (!PS3.getButtonPress(R1)){
-      for (int i = 0; i<sensorSize; i++) {
-          checkIn(i);
-       }
-      if(stopFlag) {
-        maxp = 0;
-        return;
-      }
-      for (int i = 0; i<sensorSize; i++) {
-        if(signals[i]) {
-          maxp = wane;
-          return;
-        }
-      }
-       maxp = tops;
-    }
-    else maxp = tops;
+      if (duration > 0 && duration < warningDistance) {
+         maxp = wane; Serial.print("\nClose  ");
+         if (duration < stoppingDistance) {
+            maxp = 0; Serial.print("\nStop  ");
+         }  
+         return;
+      }     
+      maxp = tops;
   }
+
+  void infCheck() {
+    if (false) {
+      closeFlag = true;
+    }
+  }
+  
+  void echoCheck() {
+    if(US[currentSensor].check_timer()) {
+      duration = US[currentSensor].ping_result/US_ROUNDTRIP_IN; 
+    }
+  }
+
+  /*
+   * For driving robot, calls obstacleNearby() & echoCheck()
+   */
+  void sensorPing() {
+    if (!state) {
+    for (uint8_t i = 0; i<sensorSize ; i++) {
+      if (millis() >= timer[i]) {
+        timer[i] += interval * sensorSize;
+        if (i==0 && currentSensor == sensorSize-1) {
+          obstacleNearby();
+        }
+        US[currentSensor].timer_stop();
+        currentSensor = i;
+        //duration = 0;
+        US[currentSensor].ping_timer(echoCheck);
+      }
+    }
+    }
+  }
+  

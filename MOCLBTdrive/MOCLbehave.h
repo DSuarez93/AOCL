@@ -9,8 +9,6 @@
 #endif
 
 USB Usb;
-//USBHub Hub1(&Usb); // Some dongles have a hub inside
-
 BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
 /* You can create the instance of the class in two ways */
 PS3BT PS3(&Btd); // This will just create the instance
@@ -20,17 +18,15 @@ const int highDead = 200;
 /*
  *  Behavioral States
  */
- bool state;          //relay
 unsigned int standby; //standby = 1, no movement
-unsigned int lift;    //lift direction
-
-const int relayState = 6;
-const int relayState2 = 7;
+bool state;           //software relay
+const int relayState = 10;
+const int relayState2 = 11;
 
 void initConnect() {
   #if !defined(__MIPSEL__)
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
-#endif
+  #endif
   if (Usb.Init() == -1) {
     Serial.print(F("\r\nOSC did not start"));
     while (1) {
@@ -43,7 +39,9 @@ void initConnect() {
   Serial.print(F("\r\nPS3 Bluetooth Library Started"));
   delay(100);
   state = false;        //state in Drive State. true if in Lift State
-  lift = 0;
+  standby = 1;
+  pinMode(relayState, OUTPUT);
+  pinMode(relayState2, OUTPUT); 
 }
 
 void relay()  {         //Affected by ButtonPress
@@ -54,7 +52,7 @@ void relay()  {         //Affected by ButtonPress
       pow4 = coast(pow4);
       pow5 = scis;
     }
-    if (!state) { 
+    if (state) { 
       digitalWrite(relayState, HIGH); 
       digitalWrite(relayState2, HIGH); 
     }
@@ -184,12 +182,11 @@ void buttonPress()  {
 void rightControl() {
     if (standby != 0 && !state) {
       if (PS3.getButtonPress(L1))  {
-//        DeadZone
-        if ( 
+        if ( //        DeadZone
            (PS3.getAnalogHat(RightHatX) < lowDead) ||
            (PS3.getAnalogHat(RightHatX) > highDead)) {
             standby = 2;
-              if((PS3.getAnalogHat(RightHatX) <= highDead)) {     //right stick is left
+              if((PS3.getAnalogHat(RightHatX) >= lowDead)) {     //right stick is left
               if (pow3 >= -maxp) {
                 if (pow3 >= -wane)  {
                         pow3 -= 5;
@@ -215,7 +212,7 @@ void rightControl() {
                       else pow1 ++;
                    }               
               }
-              if ((PS3.getAnalogHat(RightHatX) >= lowDead)) {     //right stick is right
+              if ((PS3.getAnalogHat(RightHatX) <= highDead)) {     //right stick is right
                if (pow3 <= maxp) {
                   if (pow3 <= wane)  {
                         pow3 += 5;
@@ -249,15 +246,18 @@ void rightControl() {
 void scissorLift() {
   if (state) {
     if (PS3.getAnalogButton(L2)) {
-      standby = 3;                    //incorperate limit switch conditions
-      if (PS3.getButtonPress(UP)) {
+      standby = 3;                    //go if outriggers are down
+      //if(switchRead[1] && switchRead[2] && switchRead[4] && switchRead[5])
+      if (PS3.getButtonPress(UP)) {   //&& switchRead[3] is not hit
         pow5 = scid;                  //raise scissor lift
-//        lift = 0;
+        if (PS3.getButtonPress(SQUARE)) {
+          pow5 +=40;
+        }
       }
-      else if (PS3.getButtonPress(DOWN)) {
+      else if (PS3.getButtonPress(DOWN)) { //&&switchRead[0] is not hit
         pow5 = sciu;                  //lower scissor lift
-//        lift = 1;
       }
+      //else pow5 = scis;
       else pow5 = scis;
     } else pow5 = scis;
   } else pow5 = scis;
@@ -281,8 +281,15 @@ void scissorLift() {
   Serial.print("    ");
   Serial.print(pow5);
   Serial.print("    ");
-  Serial.print(lift);
-  Serial.print("    ");
   Serial.print("States: ");
+  Serial.print("    ");
+
   }
- 
+
+/*
+      if (PS3.getAnalogButton(CIRCLE)) {
+        Serial.print(F("\r\nCircle: "));
+        Serial.print(PS3.getAnalogButton(CIRCLE));
+      }
+*/
+
