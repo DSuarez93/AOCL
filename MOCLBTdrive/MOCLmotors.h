@@ -10,7 +10,7 @@ SoftwareSerial SWSerial3(NOT_A_PIN, Mo3);
 Sabertooth ST(128, SWSerial);
 Sabertooth ST2(129, SWSerial2);
 Sabertooth ST3(130, SWSerial3);               //third motor needs a different address
-int pow1, pow2, pow3, pow4, pow5;             //remember to rename pow# with designated motor
+int pow1, pow2, pow3, pow4, pow5;             //pow# with designated motor
 int maxp;                    //127 is the fastest a motor can go
 #define tops 20              //absolute top motor speed
 const int wane = 10;         //Transition speed

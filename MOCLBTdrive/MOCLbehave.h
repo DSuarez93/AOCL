@@ -20,8 +20,8 @@ const int highDead = 200;
  */
 unsigned int standby; //standby = 1, no movement
 bool state;           //software relay
-const int relayState = 10;
-const int relayState2 = 11;
+const int relayState = 11;
+const int relayState2 = 12;
 
 void initConnect() {
   #if !defined(__MIPSEL__)
