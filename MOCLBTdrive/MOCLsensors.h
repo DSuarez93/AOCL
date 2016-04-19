@@ -45,7 +45,15 @@ bool closeFlag;
 bool stopFlag;
 
 //Limit Switches
-const int lSwitch[switchQuantity] = { 5, 6, 7, 8, 9, 10 };   //digital
+/*
+ * Bottom of Scissor Lift
+ * Top of Scissor Lift
+ * Down Left of Outrigger
+ * Down Right of Outrigger
+ * Up Left of Outrigger
+ * Up right of Outrigger
+ */
+const int lSwitch[switchQuantity] = { 5, 6, 7, 8, 9, 10 };        //digital
 const int aSwitch[switchQuantity] = {  3, 4, 5, 6, 1, 2 };        //analog
 bool switchAct[switchQuantity];
 int switchRead[switchQuantity];
@@ -83,7 +91,7 @@ int switchRead[switchQuantity];
     duration = 0;    
     closeFlag = false;
     stopFlag = false;
-    for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); switchAct[i] = false; }
+    for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); digitalWrite(lSwitch[i], LOW); }
     Serial.println("Limit Switches established.");
     for (uint8_t i = 0; i < infraredQuantity; i++)  {  pinMode(infrared[i], INPUT); }
     Serial.println("Infrared Sensors established.");

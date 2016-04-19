@@ -15,8 +15,8 @@ int maxp;                    //127 is the fastest a motor can go
 #define tops 20              //absolute top motor speed
 const int wane = 10;         //Transition speed
 const int scis = 127;        //For Scissor Lift Drive, 127 is stop
-const int sciu = 167;        //167 - 127 = 40     Go Down
-const int scid = 3;         //127 - 47 = 80      Go Up
+const int sciu = 197;        //197 - 127 = 70     Go Down
+const int scid = 3;          //127 - 3 = 124      Go Up
 
 //    Front of MOCL
 //  Mo2.1         Mo1.1

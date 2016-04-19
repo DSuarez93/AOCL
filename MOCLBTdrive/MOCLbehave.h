@@ -88,7 +88,7 @@ void buttonPress()  {
 //    if (analogRead(zpin) < 20) {              //uncomment for accelerometer
     if (PS3.getButtonPress(L1))  {
 //        DeadZone
-        if(!state && (
+        if(!state && (digitalRead(8) == 0) && (
            (PS3.getAnalogHat(LeftHatX) < lowDead) || 
            (PS3.getAnalogHat(LeftHatX) > highDead) ||
            (PS3.getAnalogHat(LeftHatY) < lowDead) ||
@@ -256,6 +256,9 @@ void scissorLift() {
       }
       else if (PS3.getButtonPress(DOWN)) { //&&switchRead[0] is not hit
         pow5 = sciu;                  //lower scissor lift
+        if (PS3.getButtonPress(SQUARE)) {
+          pow5 -=40;
+        }        
       }
       //else pow5 = scis;
       else pow5 = scis;
@@ -264,6 +267,7 @@ void scissorLift() {
 }
  
   void controllerReport() {
+    /*
   Serial.print("Hats: ");
   Serial.print(PS3.getAnalogHat(LeftHatX));
   Serial.print("    ");
@@ -283,7 +287,18 @@ void scissorLift() {
   Serial.print("    ");
   Serial.print("States: ");
   Serial.print("    ");
-
+    */
+    Serial.println();
+    Serial.print("  Scissor Lift Top:   ");
+    Serial.print(analogRead(A6));
+    Serial.print("  Outrigger Down Left:   ");
+    Serial.print(analogRead(A4));
+    Serial.print("  Outrigger Down Right:   ");
+    Serial.print(analogRead(A5));
+    Serial.print("  Outrigger Up Left:   ");
+    Serial.print(analogRead(A1));
+    Serial.print("  Outrigger Up Right:   ");
+    Serial.print(analogRead(A2));    
   }
 
 /*
