@@ -12,11 +12,11 @@ Sabertooth ST2(129, SWSerial2);
 Sabertooth ST3(130, SWSerial3);               //third motor needs a different address
 int pow1, pow2, pow3, pow4, pow5;             //pow# with designated motor
 int maxp;                    //127 is the fastest a motor can go
-#define tops 20              //absolute top motor speed
+#define tops 25              //absolute top motor speed
 const int wane = 10;         //Transition speed
 const int scis = 127;        //For Scissor Lift Drive, 127 is stop
-const int sciu = 197;        //197 - 127 = 70     Go Down
-const int scid = 3;          //127 - 3 = 124      Go Up
+const int scid = 197;        //197 - 127 = 70     Go Down
+const int sciu = 3;          //127 - 3 = 124      Go Up
 
 //    Front of MOCL
 //  Mo2.1         Mo1.1
@@ -43,10 +43,10 @@ int coast(int variable)  {
   //If the value is large, go back to zero quickly.
     if ((variable < -10) || (variable > 10))  {
       if (variable < 0)  {
-        variable+=10;
+        variable+=5;
       }
       if (variable > 0)  {
-        variable-=10;
+        variable-=5;
       }       
     }
     else  {

@@ -7,12 +7,14 @@
 #include <spi4teensy3.h>
 #include <SPI.h>
 #endif
-
 USB Usb;
 BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
 /* You can create the instance of the class in two ways */
 PS3BT PS3(&Btd); // This will just create the instance
 //PS3BT PS3(&Btd, 0x00, 0x15, 0x83, 0x3D, 0x0A, 0x57); // This will also store the bluetooth address - this can be obtained from the dongle when running the sketch
+//PS3USB PS3(&Usb);
+
+  //Deadzone for Controller
 const int lowDead = 50;
 const int highDead = 200;
 /*
@@ -23,6 +25,7 @@ bool state;           //software relay
 const int relayState = 11;
 const int relayState2 = 12;
 
+  //Connect USB Bluetooth in void setup()
 void initConnect() {
   #if !defined(__MIPSEL__)
   while (!Serial); // Wait for serial port to connect - used on Leonardo, Teensy and other boards with built-in USB CDC serial connection
@@ -30,7 +33,7 @@ void initConnect() {
   if (Usb.Init() == -1) {
     Serial.print(F("\r\nOSC did not start"));
     while (1) {
-      digitalWrite(13, LOW); //halt
+      digitalWrite(13, LOW); //halt if USB Host Shield is not connected
       delay(1200);
       digitalWrite(13, HIGH);
       delay(1200);
@@ -38,13 +41,13 @@ void initConnect() {
   }
   Serial.print(F("\r\nPS3 Bluetooth Library Started"));
   delay(100);
-  state = false;        //state in Drive State. true if in Lift State
+  state = false;             //state in Drive State. true if in Lift State
   standby = 1;
   pinMode(relayState, OUTPUT);
   pinMode(relayState2, OUTPUT); 
 }
 
-void relay()  {         //Affected by ButtonPress
+void relay()  {             //Affected by PS3.Connected()
     if (standby == 1) {
       pow1 = coast(pow1);
       pow2 = coast(pow2);
@@ -52,6 +55,7 @@ void relay()  {         //Affected by ButtonPress
       pow4 = coast(pow4);
       pow5 = scis;
     }
+                            //Switch relays
     if (state) { 
       digitalWrite(relayState, HIGH); 
       digitalWrite(relayState2, HIGH); 
@@ -88,7 +92,7 @@ void buttonPress()  {
 //    if (analogRead(zpin) < 20) {              //uncomment for accelerometer
     if (PS3.getButtonPress(L1))  {
 //        DeadZone
-        if(!state && (digitalRead(8) == 0) && (
+        if(!state && (
            (PS3.getAnalogHat(LeftHatX) < lowDead) || 
            (PS3.getAnalogHat(LeftHatX) > highDead) ||
            (PS3.getAnalogHat(LeftHatY) < lowDead) ||
@@ -249,13 +253,13 @@ void scissorLift() {
       standby = 3;                    //go if outriggers are down
       //if(switchRead[1] && switchRead[2] && switchRead[4] && switchRead[5])
       if (PS3.getButtonPress(UP)) {   //&& switchRead[3] is not hit
-        pow5 = scid;                  //raise scissor lift
+        pow5 = sciu;                  //raise scissor lift
         if (PS3.getButtonPress(SQUARE)) {
           pow5 +=40;
         }
       }
       else if (PS3.getButtonPress(DOWN)) { //&&switchRead[0] is not hit
-        pow5 = sciu;                  //lower scissor lift
+        pow5 = scid;                  //lower scissor lift
         if (PS3.getButtonPress(SQUARE)) {
           pow5 -=40;
         }        
@@ -288,6 +292,7 @@ void scissorLift() {
   Serial.print("States: ");
   Serial.print("    ");
     */
+    /*
     Serial.println();
     Serial.print("  Scissor Lift Top:   ");
     Serial.print(analogRead(A6));
@@ -299,6 +304,7 @@ void scissorLift() {
     Serial.print(analogRead(A1));
     Serial.print("  Outrigger Up Right:   ");
     Serial.print(analogRead(A2));    
+    */
   }
 
 /*

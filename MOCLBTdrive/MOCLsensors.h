@@ -2,10 +2,10 @@
  * Sensors
  */
  #include <NewPing.h>
- #define sensorSize 15            //Ultrasonic Sensors
- #define warningDistance 6
- #define stoppingDistance 4
- #define interval 191             //milliseconds
+ #define sensorSize 14           //Ultrasonic Sensors
+ #define warningDistance 14       //distance (in inches) before slowing down
+ #define stoppingDistance 6       //distance to stop
+ #define interval 80              //milliseconds
  #define switchQuantity 6         //limit switches
  #define lightQuantity 2          //light sensors
  #define infraredQuantity 3       //infrared sensors
@@ -16,10 +16,11 @@
 
 
 //Digital Ultrasonic Sensors
-const int transmitters[sensorSize] = {48, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 22, 50};
-const int echoes[sensorSize] = {49, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 23, 51};
-long duration, inches;
-unsigned long timer[sensorSize];
+const int transmitters[sensorSize] = {48, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 22};
+const int echoes[sensorSize] = {49, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 23};
+bool flag[sensorSize];            //Obstacle Report
+long duration, inches;            //duration data
+unsigned long timer[sensorSize];  //sensor timer
 uint8_t currentSensor;
 
 //Analog Light Sensors
@@ -39,10 +40,6 @@ const int RGB[RGBQuantity] = {2, 3, 4};
 //const int SCL = 15;
 const int INT = 53;   //digital
 const int zpin = 9;   //analog
-
-//Obstacle States
-bool closeFlag;
-bool stopFlag;
 
 //Limit Switches
 /*
@@ -75,9 +72,10 @@ int switchRead[switchQuantity];
     NewPing(transmitters[10], echoes[10]),
     NewPing(transmitters[11], echoes[11]),
     NewPing(transmitters[12], echoes[12]),
-    NewPing(transmitters[13], echoes[13]),
-    NewPing(transmitters[14], echoes[14])
+    NewPing(transmitters[13], echoes[13])
   };
+
+ NewPing ceiling(50, 51);
 
   void sensorInit () {
     pinMode(RGB[0], OUTPUT);
@@ -85,12 +83,11 @@ int switchRead[switchQuantity];
     for (int i = 0; i<sensorSize; i++) {
       pinMode(transmitters[i], OUTPUT);
       pinMode(echoes[i], INPUT);
+      flag[i] = false;
       timer[i+1] = timer[i] + interval;
     }
     Serial.println("US sensors established.");
     duration = 0;    
-    closeFlag = false;
-    stopFlag = false;
     for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); digitalWrite(lSwitch[i], LOW); }
     Serial.println("Limit Switches established.");
     for (uint8_t i = 0; i < infraredQuantity; i++)  {  pinMode(infrared[i], INPUT); }
@@ -115,30 +112,41 @@ int switchRead[switchQuantity];
     }
   }
 
-  void readSwitches() {
-    
+  void ceilingSensor() {
+    inches = ceiling.ping()/US_ROUNDTRIP_IN;
+    if (inches < 6 && inches > 0) {
+      pow5 = scis;
+    }
   }
   
   void obstacleNearby() {
       if (duration > 0 && duration < warningDistance) {
+         flag[currentSensor] = true;
          maxp = wane; Serial.print("\nClose  ");
          if (duration < stoppingDistance) {
             maxp = 0; Serial.print("\nStop  ");
-         }  
-         return;
-      }     
-      maxp = tops;
+         }
+         return;  
+      }
+      flag[currentSensor] = false;
   }
 
-  void infCheck() {
-    if (false) {
-      closeFlag = true;
-    }
+  void safeReset() {
+      for(uint8_t i = 0; i < sensorSize; i++) {
+        if (flag[i]) {
+          return;
+        }
+      }
+      maxp = tops;
   }
   
   void echoCheck() {
     if(US[currentSensor].check_timer()) {
-      duration = US[currentSensor].ping_result/US_ROUNDTRIP_IN; 
+      duration = US[currentSensor].ping_result/US_ROUNDTRIP_IN;
+      Serial.print(currentSensor);
+      Serial.print(" :: ");
+      Serial.print(duration);
+      Serial.println();
     }
   }
 
@@ -146,12 +154,12 @@ int switchRead[switchQuantity];
    * For driving robot, calls obstacleNearby() & echoCheck()
    */
   void sensorPing() {
-    if (!state) {
     for (uint8_t i = 0; i<sensorSize ; i++) {
       if (millis() >= timer[i]) {
         timer[i] += interval * sensorSize;
+        obstacleNearby();
         if (i==0 && currentSensor == sensorSize-1) {
-          obstacleNearby();
+            safeReset();
         }
         US[currentSensor].timer_stop();
         currentSensor = i;
@@ -159,6 +167,4 @@ int switchRead[switchQuantity];
         US[currentSensor].ping_timer(echoCheck);
       }
     }
-    }
-  }
-  
+  }  
