@@ -22,9 +22,56 @@
 #include "MOCLmotors.h"
 #include "MOCLbehave.h"
 #include "MOCLsensors.h"
+ #define RGBQuantity 3            //LED lights
+ //RGB
+//Green, Red, Blue
+const int RGB[RGBQuantity] = {2, 3, 4};
+String color;
+
+  void RGBoutput(String color) {
+    if (color == "Red") {
+      digitalWrite(RGB[0], HIGH);
+      digitalWrite(RGB[1], LOW);
+      digitalWrite(RGB[2], HIGH);
+    }
+    if (color == "Green") {
+      digitalWrite(RGB[0], LOW);
+      digitalWrite(RGB[1], HIGH);
+      digitalWrite(RGB[2], HIGH);
+    }
+    if (color == "Yellow") {
+      digitalWrite(RGB[0], LOW);
+      digitalWrite(RGB[1], HIGH);
+      digitalWrite(RGB[2], LOW);
+    }
+    if (color == "Blue") {
+      digitalWrite(RGB[0], HIGH);
+      digitalWrite(RGB[1], HIGH);
+      digitalWrite(RGB[2], LOW);
+    }
+    if (color == "White") {
+      digitalWrite(RGB[0], LOW);      
+      digitalWrite(RGB[1], LOW);
+      digitalWrite(RGB[2], LOW);            
+    }
+    if (color == "Purple") {
+      digitalWrite(RGB[0], HIGH);      
+      digitalWrite(RGB[1], LOW);
+      digitalWrite(RGB[2], LOW);            
+    }    
+  }
+
 void setup() {
   Serial.begin(38400);
 //  Serial.setTimeout(50);
+  pinMode(RGB[0], OUTPUT);
+  pinMode(RGB[1], OUTPUT);
+  pinMode(RGB[2], OUTPUT);
+  digitalWrite(RGB[0], HIGH);
+  digitalWrite(RGB[1], HIGH);
+  digitalWrite(RGB[2], HIGH);
+  color = "White";
+
   sensorInit();
   initConnect();
   motorSetup();
@@ -40,11 +87,20 @@ void loop() {
     scissorLift();    //Check for Directional Pad  
     buttonPress();    //Check for Relay Switch
     if (!PS3.getButtonPress(R1)) {
-          if (state) {
+          if (state) {            //Blue = Lifting State
+            if (color != "Blue") {color = "Blue";}
             ceilingSensor();
             readLight();
-          }   else {
+          }   else {              //Purple = Driving State
+                if (color != "Purple") {color = "Purple";}
                 sensorPing();               //Ping Sensors
+               if (allFlags) {
+                if (millis() % 1000 <= 500) {color = "Red";}
+                else {color = "White";}
+                if (stopFlag) {   //Red = Stop, Obstacle nearby
+                  {if (color != "Red") color = "Red";}
+                }
+          }
               }
     } else {
          maxp = tops;
@@ -67,11 +123,15 @@ void loop() {
       if (millis() % 10 == 0) {
         controllerReport();   
       }
-  }  else standby = 1;                     //Standby when PS3 controller is disconnected
+  }  else {
+    standby = 1;                     //Standby when PS3 controller is disconnected
+    color = "White";
+  }
   boundaryCheck(pow1);
   boundaryCheck(pow2); 
   boundaryCheck(pow3); 
   boundaryCheck(pow4);
+  RGBoutput(color);
   
   /*
    * Send final motor values to drivers

@@ -4,21 +4,19 @@
  #include <NewPing.h>
  #define sensorSize 14           //Ultrasonic Sensors
  #define warningDistance 14       //distance (in inches) before slowing down
- #define stoppingDistance 6       //distance to stop
- #define interval 80              //milliseconds
- #define switchQuantity 6         //limit switches
+ #define stoppingDistance 6       //distance (in inches) to stop
+ #define ceilingDistance 6        //distance (in inches) to ceiling
+ #define interval 91              //milliseconds
+ #define switchQuantity 4         //limit switches
  #define lightQuantity 2          //light sensors
- #define infraredQuantity 3       //infrared sensors
- #define RGBQuantity 3            //LED lights
- #define infraredReference 30
  #define lightReference 30
  #define limitReference 30
-
 
 //Digital Ultrasonic Sensors
 const int transmitters[sensorSize] = {48, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 22};
 const int echoes[sensorSize] = {49, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 23};
 bool flag[sensorSize];            //Obstacle Report
+bool allFlags, stopFlag;
 long duration, inches;            //duration data
 unsigned long timer[sensorSize];  //sensor timer
 uint8_t currentSensor;
@@ -28,12 +26,12 @@ const int light[lightQuantity] = {10, 9};
 long lightSense[lightQuantity];
 
 //Analog Infrared Sensors
+/*
+ * #define infraredReference 30
+ *  #define infraredQuantity 3       //infrared sensors
 const int infrared[infraredQuantity] = {13, 12, 11};  
 long infSense[infraredQuantity] ;                     
-
-//RGB
-const int RGB[RGBQuantity] = {2, 3, 4};
-
+*/
 
 //accelerometer needs a calibration file
 //const int SDA = 14;
@@ -45,13 +43,11 @@ const int zpin = 9;   //analog
 /*
  * Bottom of Scissor Lift
  * Top of Scissor Lift
- * Down Left of Outrigger
- * Down Right of Outrigger
  * Up Left of Outrigger
  * Up right of Outrigger
  */
-const int lSwitch[switchQuantity] = { 5, 6, 7, 8, 9, 10 };        //digital
-const int aSwitch[switchQuantity] = {  3, 4, 5, 6, 1, 2 };        //analog
+const int lSwitch[switchQuantity] = { 5, 10, 8, 9};        //digital
+const int aSwitch[switchQuantity] = {  3, 6, 2, 1 };        //analog
 bool switchAct[switchQuantity];
 int switchRead[switchQuantity];
  
@@ -75,23 +71,21 @@ int switchRead[switchQuantity];
     NewPing(transmitters[13], echoes[13])
   };
 
- NewPing ceiling(50, 51);
+ NewPing ceiling(50, 51);       //check that scissor lift doesn't hit anything above it
 
-  void sensorInit () {
-    pinMode(RGB[0], OUTPUT);
+  void sensorInit () {  
     timer[0] = millis() + 75;
     for (int i = 0; i<sensorSize; i++) {
       pinMode(transmitters[i], OUTPUT);
       pinMode(echoes[i], INPUT);
       flag[i] = false;
+      allFlags = false;
       timer[i+1] = timer[i] + interval;
     }
     Serial.println("US sensors established.");
     duration = 0;    
     for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); digitalWrite(lSwitch[i], LOW); }
     Serial.println("Limit Switches established.");
-    for (uint8_t i = 0; i < infraredQuantity; i++)  {  pinMode(infrared[i], INPUT); }
-    Serial.println("Infrared Sensors established.");
     for (uint8_t i = 0; i < lightQuantity; i++)     {  pinMode(light[i], INPUT);   }
     Serial.println("Beacon Sensors established.");
   }
@@ -101,29 +95,34 @@ int switchRead[switchQuantity];
  */
 
   void readLight() {
-    if (state) {
     for (uint8_t i = 0; i < lightQuantity; i++) {
       lightSense[i] = analogRead(light[i]);
     }
     if (lightSense[0] > lightReference &&
         lightSense[1] > lightReference) {
-      digitalWrite(RGB[0], LOW);
-    } else digitalWrite(RGB[0], HIGH);
-    }
+      //digitalWrite(RGB[0], LOW);
+    } //else digitalWrite(RGB[0], HIGH);
   }
 
   void ceilingSensor() {
     inches = ceiling.ping()/US_ROUNDTRIP_IN;
-    if (inches < 6 && inches > 0) {
+    if (inches < ceilingDistance && inches > 0) {
       pow5 = scis;
     }
   }
+
+
+  /*
+   * For driving robot, calls obstacleNearby() & echoCheck()
+   */
   
   void obstacleNearby() {
-      if (duration > 0 && duration < warningDistance) {
+      if (duration > 1 && duration < warningDistance) {
          flag[currentSensor] = true;
+         allFlags = true;
          maxp = wane; Serial.print("\nClose  ");
          if (duration < stoppingDistance) {
+            stopFlag = true;
             maxp = 0; Serial.print("\nStop  ");
          }
          return;  
@@ -137,6 +136,8 @@ int switchRead[switchQuantity];
           return;
         }
       }
+      allFlags = false;
+      stopFlag = false;
       maxp = tops;
   }
   
@@ -150,9 +151,6 @@ int switchRead[switchQuantity];
     }
   }
 
-  /*
-   * For driving robot, calls obstacleNearby() & echoCheck()
-   */
   void sensorPing() {
     for (uint8_t i = 0; i<sensorSize ; i++) {
       if (millis() >= timer[i]) {

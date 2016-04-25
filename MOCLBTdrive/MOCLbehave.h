@@ -7,6 +7,7 @@
 #include <spi4teensy3.h>
 #include <SPI.h>
 #endif
+
 USB Usb;
 BTD Btd(&Usb); // You have to create the Bluetooth Dongle instance like so
 /* You can create the instance of the class in two ways */
@@ -56,9 +57,12 @@ void relay()  {             //Affected by PS3.Connected()
       pow5 = scis;
     }
                             //Switch relays
+                            //Green means Drive
+                            //Blue means Lift
+                            //Red means obstacle. Flash for nearby, Solid for stop
     if (state) { 
       digitalWrite(relayState, HIGH); 
-      digitalWrite(relayState2, HIGH); 
+      digitalWrite(relayState2, HIGH);
     }
     else { 
       digitalWrite(relayState, LOW); 
@@ -103,7 +107,7 @@ void buttonPress()  {
                  (PS3.getAnalogHat(LeftHatX) <= highDead) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                  if (pow3 <= maxp) {
+                  if (pow3 <= maxp/2) {
                       if (pow3 <= wane)  {
                         pow3 += 5;
                       }
@@ -111,7 +115,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow3 >= -maxp)  {   
+               if (pow3 >= -maxp/2)  {   
                   if (pow3 >= -wane)  {
                         pow3 -= 5;
                   }
@@ -123,7 +127,7 @@ void buttonPress()  {
                (PS3.getAnalogHat(LeftHatX) <= highDead) &&
                (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                (PS3.getAnalogHat(LeftHatY) <= 255)) {
-                  if (pow4 >= -maxp) {
+                  if (pow4 >= -maxp/2) {
                       if (pow4 >= -wane)  {
                         pow4 -= 5;
                       }
@@ -131,7 +135,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow4 <= maxp)  {   
+               if (pow4 <= maxp/2)  {   
                   if (pow4 <= wane)  {
                         pow4 += 5;
                   }
@@ -143,7 +147,7 @@ void buttonPress()  {
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                   if (pow1 <= maxp) {
+                   if (pow1 <= maxp/2) {
                       if (pow1 <= wane)  {
                         pow1 += 5;
                       }
@@ -151,7 +155,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow1 >= -maxp)  {   
+               if (pow1 >= -maxp/2)  {   
                   if (pow1 >= -wane)  {
                         pow1 -= 5;
                   }
@@ -163,7 +167,7 @@ void buttonPress()  {
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                  (PS3.getAnalogHat(LeftHatY) <= 255))  {
-                   if (pow2 >= -maxp) {
+                   if (pow2 >= -maxp/2) {
                       if (pow2 >= -wane)  {
                         pow2 -= 5;
                       }
@@ -171,7 +175,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow2 <= maxp)  {   
+               if (pow2 <= maxp/2)  {   
                   if (pow2 <= wane)  {
                         pow2 += 5;
                   }
@@ -269,7 +273,7 @@ void scissorLift() {
     } else pow5 = scis;
   } else pow5 = scis;
 }
- 
+
   void controllerReport() {
     /*
   Serial.print("Hats: ");
