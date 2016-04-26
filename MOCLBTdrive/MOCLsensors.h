@@ -5,12 +5,13 @@
  #define sensorSize 14           //Ultrasonic Sensors
  #define warningDistance 14       //distance (in inches) before slowing down
  #define stoppingDistance 6       //distance (in inches) to stop
- #define ceilingDistance 6        //distance (in inches) to ceiling
+ #define maxDistance 40
+ #define ceilingDistance 8        //distance (in inches) to ceiling
  #define interval 91              //milliseconds
  #define switchQuantity 4         //limit switches
  #define lightQuantity 2          //light sensors
- #define lightReference 870
- #define limitReference 30
+ #define lightReference 820
+ #define limitReference 300
 
 //Digital Ultrasonic Sensors
 const int transmitters[sensorSize] = {48, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 22};
@@ -55,20 +56,20 @@ int switchRead[switchQuantity];
  * See playground.arduino.cc/Code/NewPing
  */
  NewPing US[sensorSize] = { 
-    NewPing(transmitters[0], echoes[0]),
-    NewPing(transmitters[1], echoes[1]),
-    NewPing(transmitters[2], echoes[2]),
-    NewPing(transmitters[3], echoes[3]),
-    NewPing(transmitters[4], echoes[4]),
-    NewPing(transmitters[5], echoes[5]),
-    NewPing(transmitters[6], echoes[6]),
-    NewPing(transmitters[7], echoes[7]),
-    NewPing(transmitters[8], echoes[8]),
-    NewPing(transmitters[9], echoes[9]),
-    NewPing(transmitters[10], echoes[10]),
-    NewPing(transmitters[11], echoes[11]),
-    NewPing(transmitters[12], echoes[12]),
-    NewPing(transmitters[13], echoes[13])
+    NewPing(transmitters[0], echoes[0], maxDistance),
+    NewPing(transmitters[1], echoes[1], maxDistance),
+    NewPing(transmitters[2], echoes[2], maxDistance),
+    NewPing(transmitters[3], echoes[3], maxDistance),
+    NewPing(transmitters[4], echoes[4], maxDistance),
+    NewPing(transmitters[5], echoes[5], maxDistance),
+    NewPing(transmitters[6], echoes[6], maxDistance),
+    NewPing(transmitters[7], echoes[7], maxDistance),
+    NewPing(transmitters[8], echoes[8], maxDistance),
+    NewPing(transmitters[9], echoes[9], maxDistance),
+    NewPing(transmitters[10], echoes[10], maxDistance),
+    NewPing(transmitters[11], echoes[11], maxDistance),
+    NewPing(transmitters[12], echoes[12], maxDistance),
+    NewPing(transmitters[13], echoes[13], maxDistance)
   };
 
  NewPing ceiling(50, 51);       //check that scissor lift doesn't hit anything above it
@@ -83,6 +84,7 @@ int switchRead[switchQuantity];
       timer[i+1] = timer[i] + interval;
     }
     Serial.println("US sensors established.");
+    currentSensor = -1;
     duration = 0;    
     for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); digitalWrite(lSwitch[i], HIGH); }
     Serial.println("Limit Switches established.");
@@ -94,7 +96,7 @@ int switchRead[switchQuantity];
  * For lifting ordnance
  */
 
-  String readLight() {
+  char readLight() {
 //    Serial.print("    Light Sensors:  ");
     for (uint8_t i = 0; i < lightQuantity; i++) {
       lightSense[i] = analogRead(light[i]);
@@ -103,46 +105,45 @@ int switchRead[switchQuantity];
     }
     if (lightSense[0] > lightReference &&
         lightSense[1] > lightReference) {
-      Serial.println("Underneath");
-      return "Red";
+//      Serial.println("Underneath");
+      return 'y';
     }
-    Serial.println(); 
-    return "Blue";
+//  Serial.println();
+    return 'p';
   }
 
-  void ceilingSensor() {
+  char ceilingSensor() {
     inches = ceiling.ping()/US_ROUNDTRIP_IN;
-    if (inches < ceilingDistance && inches > 0) {
+    if (inches < ceilingDistance && inches > 1) {
       pow5 = scis;
+      return 'r';
     }
+    return 'b';
   }
 
-void readSwitches() {
+  void readSwitches() {
       Serial.println();
       for (int i=0; i<switchQuantity; i++){
         Serial.print(analogRead(aSwitch[i]));
         Serial.print("  ::  ");
     }
-}
-
-
+  }
   /*
-   * For driving robot, call sensorPing, which calls obstacleNearby() & echoCheck(), if R1 is not held
+   * For driving robot, call sensorPing, which calls obstacleNearby() & echoCheck(), if R1 or Square is not held
    */
   
-  bool obstacleNearby() {
+  void obstacleNearby() {
       if (duration > 1 && duration < warningDistance) {
          flag[currentSensor] = true;
          allFlags = true;
-         maxp = wane; Serial.print("\nClose  ");
+         maxp = wane; //Serial.print("\nClose  ");
          if (duration < stoppingDistance) {
             stopFlag = true;
-            maxp = 0; Serial.print("\nStop  ");
+            maxp = 0; //Serial.print("\nStop  ");
          }
-         return true;  
+         return;  
       }
       flag[currentSensor] = false;
-      return false;
   }
 
   void safeReset() {
@@ -170,14 +171,13 @@ void readSwitches() {
     for (uint8_t i = 0; i<sensorSize ; i++) {
       if (millis() >= timer[i]) {
         timer[i] += interval * sensorSize;
-        if (obstacleNearby()) break;
-        if (i==0 && currentSensor == sensorSize-1) {
+        if (i==0 && currentSensor >= sensorSize-1) {
             safeReset();
-        }
+        }        
         US[currentSensor].timer_stop();
         currentSensor = i;
-        //duration = 0;
         US[currentSensor].ping_timer(echoCheck);
+        (obstacleNearby());
       }
     }
   }  

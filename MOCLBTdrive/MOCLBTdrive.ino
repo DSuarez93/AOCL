@@ -24,41 +24,59 @@
 #include "MOCLsensors.h"
  #define RGBQuantity 3            //LED lights
  //RGB
-//Green, Red, Blue
-const int RGB[RGBQuantity] = {2, 3, 4};
-String color;
+const int RGB[RGBQuantity] = {
+                              2,  //Green [0]
+                              3,  //Red   [1]
+                              4}; //Blue  [2]
+char color;
 
-  void RGBoutput(String color) {
-    if (color == "Red") {
+  void RGBoutput(char color) {
+    if (color == 'r') {
       digitalWrite(RGB[0], HIGH);
       digitalWrite(RGB[1], LOW);
       digitalWrite(RGB[2], HIGH);
+      return;
     }
-    if (color == "Green") {
+    if (color == 'g') {
       digitalWrite(RGB[0], LOW);
       digitalWrite(RGB[1], HIGH);
       digitalWrite(RGB[2], HIGH);
+      return;
     }
-    if (color == "Yellow") {
+    if (color == 'y') {
       digitalWrite(RGB[0], LOW);
-      digitalWrite(RGB[1], HIGH);
-      digitalWrite(RGB[2], LOW);
+      digitalWrite(RGB[1], LOW);
+      digitalWrite(RGB[2], HIGH);
+      return;
     }
-    if (color == "Blue") {
+    if (color == 'b') {
       digitalWrite(RGB[0], HIGH);
       digitalWrite(RGB[1], HIGH);
       digitalWrite(RGB[2], LOW);
+      return;
     }
-    if (color == "White") {
+    if (color == 'w') {
       digitalWrite(RGB[0], LOW);      
       digitalWrite(RGB[1], LOW);
       digitalWrite(RGB[2], LOW);            
+      return;
     }
-    if (color == "Purple") {
+    if (color == 'p') {
       digitalWrite(RGB[0], HIGH);      
       digitalWrite(RGB[1], LOW);
-      digitalWrite(RGB[2], LOW);            
-    }    
+      digitalWrite(RGB[2], LOW);
+      return;
+    }
+    if (color == 't') {
+      digitalWrite(RGB[0], LOW);      
+      digitalWrite(RGB[1], HIGH);
+      digitalWrite(RGB[2], LOW);
+    }
+    if (color == 'o') {
+      digitalWrite(RGB[0], LOW);      
+      digitalWrite(RGB[1], LOW);
+      digitalWrite(RGB[2], LOW);
+    }
   }
 
 void setup() {
@@ -70,7 +88,7 @@ void setup() {
   digitalWrite(RGB[0], HIGH);
   digitalWrite(RGB[1], HIGH);
   digitalWrite(RGB[2], HIGH);
-  color = "White";
+  color = 'w';
 
   sensorInit();
   initConnect();
@@ -88,22 +106,27 @@ void loop() {
     buttonPress();    //Check for Relay Switch
 //    readSwitches();
     if (!PS3.getButtonPress(R1)) {
-          if (state) {            //Blue = Lifting State
-            if (color != "Blue") {color = "Blue";}
-            ceilingSensor();
-            color = readLight();
-          }   else {              //Purple = Driving State
-                if (color != "Purple") {color = "Purple";}
-                sensorPing();               //Ping Sensors
-               if (allFlags) {
-                if (millis() % 1000 <= 500) {color = "Red";}
-                else {color = "White";}
-                if (stopFlag) {   //Red = Stop, Obstacle nearby
-                  {if (color != "Red") color = "Red";}
-                }
-          }
+          if (state) {                                    //Blue = Lifting State
+            color = 'b';
+            //color = ceilingSensor();                      //Red stop, Obstacle above
+          }   else {                                      //Green = Driving State
+                if (PS3.getButtonPress(SQUARE)) {         //Purple = Enter Alignment Mode
+                 color = readLight();                     //Yellow means alignmnet is good
+                 maxp = wane*2+4;
+                } else {
+                      color = 'g';
+                      sensorPing();                       //Ping Sensors
+                      if (allFlags) {
+                          if (millis() % 1000 <= 500) {
+                           //if (color != "Red") {color = "Red";}                 //Flashing, Obstacle nearby
+                          }
+                          //else {color = "Off";}
+                          if (stopFlag) {                 //Red stop, Obstacle on top
+                              //if (color != "Red") color = "Red";}
+                      }
+                  }
               }
-    } else {
+    }} else {
          maxp = tops;
       }
     //Disconnect Controller
@@ -126,12 +149,12 @@ void loop() {
       }
   }  else {
     standby = 1;                     //Standby when PS3 controller is disconnected
-    color = "White";
+    color = 'w';
   }
-  boundaryCheck(pow1);
-  boundaryCheck(pow2); 
-  boundaryCheck(pow3); 
-  boundaryCheck(pow4);
+  pow1 = boundaryCheck(pow1);
+  pow2 = boundaryCheck(pow2); 
+  pow3 = boundaryCheck(pow3); 
+  pow4 = boundaryCheck(pow4);
   RGBoutput(color);
   
   /*
@@ -149,7 +172,6 @@ void loop() {
   }
   else { digitalWrite(13, LOW);  }
 }
-
       /*
       if (PS3.getButtonClick(RIGHT)) {
         //Serial.print(F("\r\nRight"));

@@ -107,7 +107,7 @@ void buttonPress()  {
                  (PS3.getAnalogHat(LeftHatX) <= highDead) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                  if (pow3 <= maxp/2) {
+                  if (pow3 <= maxp) {
                       if (pow3 <= wane)  {
                         pow3 += 5;
                       }
@@ -115,7 +115,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow3 >= -maxp/2)  {   
+               if (pow3 >= -maxp)  {   
                   if (pow3 >= -wane)  {
                         pow3 -= 5;
                   }
@@ -127,7 +127,7 @@ void buttonPress()  {
                (PS3.getAnalogHat(LeftHatX) <= highDead) &&
                (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                (PS3.getAnalogHat(LeftHatY) <= 255)) {
-                  if (pow4 >= -maxp/2) {
+                  if (pow4 >= -maxp) {
                       if (pow4 >= -wane)  {
                         pow4 -= 5;
                       }
@@ -135,7 +135,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow4 <= maxp/2)  {   
+               if (pow4 <= maxp)  {   
                   if (pow4 <= wane)  {
                         pow4 += 5;
                   }
@@ -147,7 +147,7 @@ void buttonPress()  {
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= 0) &&
                  (PS3.getAnalogHat(LeftHatY) <= highDead))  {
-                   if (pow1 <= maxp/2) {
+                   if (pow1 <= maxp) {
                       if (pow1 <= wane)  {
                         pow1 += 5;
                       }
@@ -155,7 +155,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow1 >= -maxp/2)  {   
+               if (pow1 >= -maxp)  {   
                   if (pow1 >= -wane)  {
                         pow1 -= 5;
                   }
@@ -167,7 +167,7 @@ void buttonPress()  {
                  (PS3.getAnalogHat(LeftHatX) <= 255) && 
                  (PS3.getAnalogHat(LeftHatY) >= lowDead) &&
                  (PS3.getAnalogHat(LeftHatY) <= 255))  {
-                   if (pow2 >= -maxp/2) {
+                   if (pow2 >= -maxp) {
                       if (pow2 >= -wane)  {
                         pow2 -= 5;
                       }
@@ -175,7 +175,7 @@ void buttonPress()  {
                    }
              }
              else {
-               if (pow2 <= maxp/2)  {   
+               if (pow2 <= maxp)  {   
                   if (pow2 <= wane)  {
                         pow2 += 5;
                   }
