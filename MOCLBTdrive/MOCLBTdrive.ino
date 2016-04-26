@@ -86,11 +86,12 @@ void loop() {
     rightControl();   //Check for Right Stick
     scissorLift();    //Check for Directional Pad  
     buttonPress();    //Check for Relay Switch
+//    readSwitches();
     if (!PS3.getButtonPress(R1)) {
           if (state) {            //Blue = Lifting State
             if (color != "Blue") {color = "Blue";}
             ceilingSensor();
-            readLight();
+            color = readLight();
           }   else {              //Purple = Driving State
                 if (color != "Purple") {color = "Purple";}
                 sensorPing();               //Ping Sensors
@@ -120,7 +121,7 @@ void loop() {
         PS3.printStatusString();
     }
     //Print report of controller or sensors
-      if (millis() % 10 == 0) {
+      if (millis() % 100 == 0) {
         controllerReport();   
       }
   }  else {

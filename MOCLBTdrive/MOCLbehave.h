@@ -275,14 +275,14 @@ void scissorLift() {
 }
 
   void controllerReport() {
-    /*
+    
   Serial.print("Hats: ");
   Serial.print(PS3.getAnalogHat(LeftHatX));
   Serial.print("    ");
   Serial.print(PS3.getAnalogHat(LeftHatY));
   Serial.print("    ");
-  Serial.println(PS3.getAnalogHat(RightHatY));
-  Serial.print("Power Levels: ");
+  Serial.print(PS3.getAnalogHat(RightHatY));
+  Serial.print("  ::  Power Levels: ");
   Serial.print(pow1);
   Serial.print("    ");
   Serial.print(pow2);
@@ -293,13 +293,22 @@ void scissorLift() {
   Serial.print("    ");
   Serial.print(pow5);
   Serial.print("    ");
-  Serial.print("States: ");
-  Serial.print("    ");
-    */
-    /*
+//  Serial.print("States: ");
+//  Serial.print("    ");
+        
     Serial.println();
-    Serial.print("  Scissor Lift Top:   ");
-    Serial.print(analogRead(A6));
+//    Serial.print("  Scissor Lift Top:   ");
+  }
+/*
+    Serial.print(analogRead(3));    
+    Serial.print("  ::  ");    
+    Serial.print(analogRead(6));
+    Serial.print("  ::  ");
+    Serial.print(analogRead(2));
+    Serial.print("  ::  ");
+    Serial.print(analogRead(1));    
+//    Serial.print(analogRead(A6));
+    /*
     Serial.print("  Outrigger Down Left:   ");
     Serial.print(analogRead(A4));
     Serial.print("  Outrigger Down Right:   ");
@@ -309,7 +318,7 @@ void scissorLift() {
     Serial.print("  Outrigger Up Right:   ");
     Serial.print(analogRead(A2));    
     */
-  }
+
 
 /*
       if (PS3.getAnalogButton(CIRCLE)) {

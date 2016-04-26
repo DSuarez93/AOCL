@@ -9,7 +9,7 @@
  #define interval 91              //milliseconds
  #define switchQuantity 4         //limit switches
  #define lightQuantity 2          //light sensors
- #define lightReference 30
+ #define lightReference 870
  #define limitReference 30
 
 //Digital Ultrasonic Sensors
@@ -22,7 +22,7 @@ unsigned long timer[sensorSize];  //sensor timer
 uint8_t currentSensor;
 
 //Analog Light Sensors
-const int light[lightQuantity] = {10, 9};       
+const int light[lightQuantity] = {13, 12};       
 long lightSense[lightQuantity];
 
 //Analog Infrared Sensors
@@ -84,7 +84,7 @@ int switchRead[switchQuantity];
     }
     Serial.println("US sensors established.");
     duration = 0;    
-    for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); digitalWrite(lSwitch[i], LOW); }
+    for (uint8_t i = 0; i < switchQuantity; i++)    {  pinMode(lSwitch[i], OUTPUT); digitalWrite(lSwitch[i], HIGH); }
     Serial.println("Limit Switches established.");
     for (uint8_t i = 0; i < lightQuantity; i++)     {  pinMode(light[i], INPUT);   }
     Serial.println("Beacon Sensors established.");
@@ -94,14 +94,20 @@ int switchRead[switchQuantity];
  * For lifting ordnance
  */
 
-  void readLight() {
+  String readLight() {
+//    Serial.print("    Light Sensors:  ");
     for (uint8_t i = 0; i < lightQuantity; i++) {
       lightSense[i] = analogRead(light[i]);
+//      Serial.print(lightSense[i]);
+//      Serial.print(" :: ");
     }
     if (lightSense[0] > lightReference &&
         lightSense[1] > lightReference) {
-      //digitalWrite(RGB[0], LOW);
-    } //else digitalWrite(RGB[0], HIGH);
+      Serial.println("Underneath");
+      return "Red";
+    }
+    Serial.println(); 
+    return "Blue";
   }
 
   void ceilingSensor() {
@@ -111,12 +117,20 @@ int switchRead[switchQuantity];
     }
   }
 
+void readSwitches() {
+      Serial.println();
+      for (int i=0; i<switchQuantity; i++){
+        Serial.print(analogRead(aSwitch[i]));
+        Serial.print("  ::  ");
+    }
+}
+
 
   /*
-   * For driving robot, calls obstacleNearby() & echoCheck()
+   * For driving robot, call sensorPing, which calls obstacleNearby() & echoCheck(), if R1 is not held
    */
   
-  void obstacleNearby() {
+  bool obstacleNearby() {
       if (duration > 1 && duration < warningDistance) {
          flag[currentSensor] = true;
          allFlags = true;
@@ -125,9 +139,10 @@ int switchRead[switchQuantity];
             stopFlag = true;
             maxp = 0; Serial.print("\nStop  ");
          }
-         return;  
+         return true;  
       }
       flag[currentSensor] = false;
+      return false;
   }
 
   void safeReset() {
@@ -144,10 +159,10 @@ int switchRead[switchQuantity];
   void echoCheck() {
     if(US[currentSensor].check_timer()) {
       duration = US[currentSensor].ping_result/US_ROUNDTRIP_IN;
-      Serial.print(currentSensor);
-      Serial.print(" :: ");
-      Serial.print(duration);
-      Serial.println();
+//      Serial.print("Sensor ");
+//      Serial.print(currentSensor+1);
+//      Serial.print(" :: ");
+//      Serial.println(duration);
     }
   }
 
@@ -155,7 +170,7 @@ int switchRead[switchQuantity];
     for (uint8_t i = 0; i<sensorSize ; i++) {
       if (millis() >= timer[i]) {
         timer[i] += interval * sensorSize;
-        obstacleNearby();
+        if (obstacleNearby()) break;
         if (i==0 && currentSensor == sensorSize-1) {
             safeReset();
         }
