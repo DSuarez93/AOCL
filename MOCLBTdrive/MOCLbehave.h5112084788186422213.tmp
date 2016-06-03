@@ -76,10 +76,10 @@ void switchSpeed() {
   if (PS3.getAnalogButton(R2)) {
     if (PS3.getButtonPress(L1)) {
       if (PS3.getButtonPress(CIRCLE)) {
-        tops = deft;
+        maxp = deft;
       }
-      if (PS3.getButtonClick(TRIANGLE)) {
-        tops = tops + 10;
+      if (PS3.getButtonPress(TRIANGLE)) {
+        maxp+=10;
       }
     }
   }

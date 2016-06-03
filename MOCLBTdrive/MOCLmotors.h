@@ -13,7 +13,8 @@ Sabertooth ST3(130, SWSerial3);               //third motor needs a different ad
 int pow1, pow2, pow3, pow4, pow5;          
 //pow# with designated motor
 int maxp;                    //127 is the fastest a motor can go
-#define tops 32              //absolute top motor speed
+#define deft 40              //absolute top motor speed
+int tops;                    
 const int wane = 10;         //Transition speed
 const int scis = 127;        //For Scissor Lift Drive, 127 is stop
 const int scid = 197;        //197 - 127 = 70     Go Down
@@ -35,6 +36,7 @@ void motorSetup() {
     SWSerial2.begin(38400);                  
     SWSerial3.begin(38400);                  //Must be 38400 which is the fastest baud rate of Sabertooth 50
     SabertoothTXPinSerial.begin(38400);      
+    tops = deft;
     maxp = tops;
     pow1 = 0; pow2 = 0; pow3 = 0; pow4 = 0; pow5 = 0;
     ST.setBaudRate(38400);

@@ -76,10 +76,10 @@ void switchSpeed() {
   if (PS3.getAnalogButton(R2)) {
     if (PS3.getButtonPress(L1)) {
       if (PS3.getButtonPress(CIRCLE)) {
-        tops = deft;
+        maxp = deft;
       }
-      if (PS3.getButtonClick(TRIANGLE)) {
-        tops = tops + 10;
+      if (PS3.getButtonPress(TRIANGLE)) {
+        maxp+=10;
       }
     }
   }
@@ -215,19 +215,19 @@ void rightControl() {
                       }
                       else pow3 --;
                    }
-              if (pow4 >= -maxp-wane) {
+              if (pow4 >= -maxp) {
                 if (pow4 >= -wane)  {
                         pow4 -= 5;
                       }
                       else pow4 --;
                    }
-              if (pow2 <= maxp+wane) {
+              if (pow2 <= maxp) {
                   if (pow2 <= wane)  {
                         pow2 += 5;
                       }
                       else pow2 ++;
                    }
-              if (pow1 <= maxp+wane) {
+              if (pow1 <= maxp) {
                   if (pow1 <= wane)  {
                         pow1 += 5;
                       }
@@ -236,25 +236,25 @@ void rightControl() {
               }
               if ((PS3.getAnalogHat(RightHatX) <= highDead)) {     //right stick is right
                                                                    //spin clockwise
-               if (pow3 <= maxp+wane) {
+               if (pow3 <= maxp) {
                   if (pow3 <= wane)  {
                         pow3 += 5;
                       }
                       else pow3 ++;
                    }               
-               if (pow4 <= maxp+wane) {
+               if (pow4 <= maxp) {
                   if (pow4 <= wane)  {
                         pow4 += 5;
                       }
                       else pow4 ++;
                    }
-              if (pow2 >= -maxp-wane) {
+              if (pow2 >= -maxp) {
                   if (pow2 >= -wane)  {
                         pow2 -= 5;
                       }
                       else pow2 --;
                    }                                                     
-              if (pow1 >= -maxp-wane) {
+              if (pow1 >= -maxp) {
                   if (pow1 >= -wane)  {
                         pow1 -= 5;
                       }
