@@ -6,6 +6,10 @@ HC-SR04 Ping distance sensor
  *    Outriggers are down 
  *    L1 is held down
  *    No obstacle in direction
+ *
+ *  There were some problems with the sensor execution along with Bluetooth communication. Without replacing the sensors, there are two proposed solutions:
+ *  1) Use a slave Arduino unit with the sensor processing, and send the output of the sensors (tell whether or not an obstacle is near) to the master Arduino.
+ *  2) Use asynchronous procedures for the sensors. Use a master interrupt flag which asynchronously allows the MOCL to move if an obstacle is detected.
 */
 #include <Sabertooth.h>
 //PS3 Wired USB
