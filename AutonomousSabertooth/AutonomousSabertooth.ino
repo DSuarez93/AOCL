@@ -7,6 +7,11 @@
 #define EMITTER_PIN             2  // emitter is controlled by digital pin 2
 
 /*
+This is an early prototype script of an attempt at autonomous navigation using a patterned track.
+Edits need to be made in order to demonstrate its capability more reliably.
+*/
+
+/*
 Quick and easy line following robot using an IR reflectance
 array.Connect Vcc and Gnd to the Pololu QTR-8A sensor from 
 the arduino. Connect the pins 1,2,3,... to arduino's analog
