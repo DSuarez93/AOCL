@@ -37,18 +37,16 @@ void setup() {
 void loop() {
   Usb.Task();
 
-  if (PS3.PS3Connected || PS3.PS3NavigationConnected) {
+  if (PS3.PS3Connected) {
     if (PS3.getAnalogHat(LeftHatX) > 137 || PS3.getAnalogHat(LeftHatX) < 117 || PS3.getAnalogHat(LeftHatY) > 137 || PS3.getAnalogHat(LeftHatY) < 117 || PS3.getAnalogHat(RightHatX) > 137 || PS3.getAnalogHat(RightHatX) < 117 || PS3.getAnalogHat(RightHatY) > 137 || PS3.getAnalogHat(RightHatY) < 117) {
       Serial.print(F("\r\nLeftHatX: "));
       Serial.print(PS3.getAnalogHat(LeftHatX));
       Serial.print(F("\tLeftHatY: "));
       Serial.print(PS3.getAnalogHat(LeftHatY));
-      if (PS3.PS3Connected) { // The Navigation controller only have one joystick
         Serial.print(F("\tRightHatX: "));
         Serial.print(PS3.getAnalogHat(RightHatX));
         Serial.print(F("\tRightHatY: "));
         Serial.print(PS3.getAnalogHat(RightHatY));
-      }
     }
 
     // Analog button values can be read from almost all buttons
