@@ -6,58 +6,54 @@ const int echoPin=6;
 const int Red_LED=4;
 const int Yellow_LED=7;
 const int motorPin = 10;
+const int go = 255;
+const int reduce = 100;
+const int stop = 0;
+const int outer_warn = 24;
+const int inner_warn = 6;
+const int up_close = 2;
 int speed = 0;
 
-void setup() 
+void setup()  
 {
   Serial.begin (9600);
-  pinMode(trigPin, OUTPUT);
+  pinMode(trigPin, OUTPUT);   //This is the ultrasonic sensor used to control the motor, the heart of the obstacle avoidance.
   pinMode(echoPin, INPUT);
   pinMode(Red_LED, OUTPUT);
   pinMode(Yellow_LED, OUTPUT);
  
   pinMode(motorPin, OUTPUT); // Set up the motor pin to be an output
     
-} // END OF void setup()-------------------------------------
+} // END OF void setup()
 
 void loop() 
 {  
-  if(Serial.available()>0)
-  {
+  if(Serial.available()>0) {
     BluetoothInputString = Serial.read(); 
     //Change pin mode only if new command is different from previous.   
     //Serial.println(command);
-    Serial.print(BluetoothInputString);
-    Serial.println();
-    switch (BluetoothInputString)
-    {
-      case 'F':  
-      {
+    Serial.println(BluetoothInputString);
+    switch (BluetoothInputString) {
+      case 'F': {
         ObstacleAvoidance();
         break;
       }
-       
-      case 'G':
-      {
+      case 'G': {
         digitalWrite(Red_LED, LOW);
         digitalWrite(Yellow_LED, LOW);
-        speed = 255;
-        analogWrite(motorPin,speed);
+        speed = go;
         break;
       }
-    
-      case 'S':
-      {
+      case 'S': {
         digitalWrite(Red_LED, LOW);
         digitalWrite(Yellow_LED, LOW);
-        speed = 0;
-        analogWrite(motorPin,speed);
+        speed = stop;
         break;
       }
-    }
-    
-  }
-}   // END OF void loop()
+    } //end switch
+    analogWrite(motorPin,speed);
+  }   //endif
+}     // END OF void loop()
 
 void ObstacleAvoidance()
 {
@@ -73,42 +69,26 @@ void ObstacleAvoidance()
   inches = microsecondsToInches(duration);
   cm = microsecondsToCentimeters(duration);
   
-  if (inches > 6 && inches <= 24) //Check if Object is in warning zone
-  {  
+  if (inches > inner_warn && inches <= outer_warn) {//Check if Object is in warning zone
     digitalWrite(Red_LED,LOW); // When the Red condition is met, the Green LED should turn off
     digitalWrite(Yellow_LED,HIGH);
-    speed = 150;
-    analogWrite(motorPin,speed); 
-    Serial.print(inches);
-    Serial.print("in, ");
-    Serial.print(cm);
-    Serial.print("cm");
-    Serial.println();
+    speed = go - reduce;
+    Serial.println(inches+"in, "+cm+"cm");
     return;
   }
-  if (cm > 2 && inches <= 6) 
-  {
+  if (inches > up_close && inches <= inner_warn)  {
     digitalWrite(Red_LED, HIGH);
     digitalWrite(Yellow_LED, LOW);
-    speed = 0;
-    analogWrite(motorPin,speed);
-    Serial.print(inches);
-    Serial.print("in, ");
-    Serial.print(cm);
-    Serial.print("cm");
-    Serial.println();
+    speed = stop;
+    Serial.println(inches+"in, "+cm+"cm");
     return;
   }
-  else 
-  {
+  else {
     digitalWrite(Red_LED, LOW);
-    digitalWrite(Yellow_LED, LOW);
-    Serial.println("Out of range");    
-    speed = 255;
-    analogWrite(motorPin,speed);
-    return;
+    digitalWrite(Yellow_LED, LOW
+    speed = go;
+    Serial.println("Out of range");
   }
-  delay (500);
   return;
 }
 
@@ -129,5 +109,3 @@ long microsecondsToCentimeters(long microseconds)
   // object we take half of the distance travelled.
   return microseconds / 29 / 2;
 }
-
-
