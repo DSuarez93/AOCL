@@ -73,19 +73,19 @@ void ObstacleAvoidance()
     digitalWrite(Red_LED,LOW); // When the Red condition is met, the Green LED should turn off
     digitalWrite(Yellow_LED,HIGH);
     speed = go - reduce;
-    Serial.println(inches+"in, "+cm+"cm");
+    Serial.println(inches+" in : "+cm);
     return;
   }
   if (inches > up_close && inches <= inner_warn)  {
     digitalWrite(Red_LED, HIGH);
     digitalWrite(Yellow_LED, LOW);
     speed = stop;
-    Serial.println(inches+"in, "+cm+"cm");
+    Serial.println(inches+" in : "+cm);
     return;
   }
   else {
     digitalWrite(Red_LED, LOW);
-    digitalWrite(Yellow_LED, LOW
+    digitalWrite(Yellow_LED, LOW);
     speed = go;
     Serial.println("Out of range");
   }
