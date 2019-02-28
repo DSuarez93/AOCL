@@ -43,6 +43,8 @@ void motorSetup() {
     ST2.setBaudRate(38400);                  //Lift motor drive accepts single byte commands, baud set on DIP switches on motor drive itself
 }
 
+//coast is a method used to steadily bring the motor speeds to zero, because an immediate change from full speed to stop will damage the motors over time
+//this method should only be called when the vehicle needs to stop.
 int coast(int variable)  {
   //If the value is large, go back to zero quickly.
     if ((variable < -10) || (variable > 10))  {
@@ -65,6 +67,7 @@ int coast(int variable)  {
     return variable;
 }
 
+//boundary check makes sure that, at any time when the speed values exceed the highest or lowest possible, they only report the max possible
 int boundaryCheck(int variable)  {
     if (maxp == 0) {
       return 0;
